@@ -3,8 +3,13 @@ import { CivicAuthProvider, UserButton } from "@civic/auth-web3/react";
 export function CivicProvider({ children }: {
     children: React.ReactNode
 }) {
+
+  const API_KEY = import.meta.env.VITE_CIVIC_KEY
+  
   return (
-    <CivicAuthProvider clientId="71bf97f0-8ffe-4279-ae2d-f45706977fd5">
+    <CivicAuthProvider 
+        clientId={API_KEY}
+    >
       <UserButton />
       {children}
     </CivicAuthProvider>

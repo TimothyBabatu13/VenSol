@@ -1,23 +1,29 @@
 
-import type { AuthStatus } from "@civic/auth-web3";
 import { useUser } from "@civic/auth-web3/react"
-import { createContext, useEffect, useState, type ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { any } from "zod"
 
 interface ProviderType {
-    authenticated: boolean
+    authenticated: boolean,
+    refreshBalances: () => any
 }
 const Provider = createContext<ProviderType>({
-    authenticated: false
+    authenticated: false,
+    refreshBalances: () =>{}
+    
 })
 
 export function CivicAuthProvider({ children }: { children: ReactNode }) {
     const [userState, setUserState] = useState<ProviderType>({
-        authenticated: false
+        authenticated: false,
+        refreshBalances: ()=>{
+            console.log('')
+        }
     })
     const user = useUser();
 
     const authStat = user.authStatus;
-    console.log(userState)
+    
     useEffect(()=>{
         setUserState(prev => ({
             ...prev,
@@ -29,4 +35,10 @@ export function CivicAuthProvider({ children }: { children: ReactNode }) {
         {children}
     </Provider.Provider>
   )
+}
+
+export const useAuthProvider = () => {
+    const context = useContext(Provider);
+    if(!context) return;
+    return context;
 }

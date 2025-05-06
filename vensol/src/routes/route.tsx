@@ -9,6 +9,7 @@ export const Route = () => {
                     index
                     Component={Home}
                 />
+
             </Routes>
         </BrowserRouter>
     )

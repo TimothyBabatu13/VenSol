@@ -5,6 +5,7 @@ import { Route } from './routes/route'
 
 function App() {
   console.log('hi')
+
   return (
     <CivicProvider>
       <CivicAuthProvider>
