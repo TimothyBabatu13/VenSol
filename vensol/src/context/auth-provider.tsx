@@ -1,24 +1,28 @@
 
 import { useUser } from "@civic/auth-web3/react"
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { any } from "zod"
+import { UseWallet } from "../lib/use-wallet"
 
-interface ProviderType {
+export interface ProviderType {
     authenticated: boolean,
-    refreshBalances: () => any
+    refreshBalances: () => number,
+    loading: boolean
 }
 const Provider = createContext<ProviderType>({
     authenticated: false,
-    refreshBalances: () =>{}
+    refreshBalances: () => 0,
+    loading: true
     
 })
 
 export function CivicAuthProvider({ children }: { children: ReactNode }) {
+    const { getBalance } = UseWallet()
     const [userState, setUserState] = useState<ProviderType>({
         authenticated: false,
         refreshBalances: ()=>{
-            console.log('')
-        }
+            return getBalance()!
+        },
+        loading: true
     })
     const user = useUser();
 
@@ -27,7 +31,8 @@ export function CivicAuthProvider({ children }: { children: ReactNode }) {
     useEffect(()=>{
         setUserState(prev => ({
             ...prev,
-            authenticated: authStat === 'authenticated'
+            authenticated: authStat === 'authenticated',
+            loading: user.isLoading
         }))
     }, [user])
   return (

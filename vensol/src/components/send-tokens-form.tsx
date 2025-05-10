@@ -12,20 +12,24 @@ import { Input } from "./ui/input"
 import { Textarea } from "./ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { useAuthProvider } from "../context/auth-provider"
+import { errorToast, successToast } from "./my-custom-toast"
 
 const formSchema = z.object({
   recipient: z.string().min(1, "Recipient is required"),
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
     message: "Amount must be a positive number",
   }),
-  token: z.string().default("SOL"),
+  token: z.string(),
   note: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
 
-export function SendTokensForm() {
-    const userAuth = useAuthProvider(); 
+export const SendTokensForm = () => {
+
+
+  const userAuth = useAuthProvider();
+
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<FormValues>({
@@ -38,103 +42,86 @@ export function SendTokensForm() {
     },
   })
 
-//   const onSubmit = async (values: FormValues) => {
-//     if (!user?.walletAddress) {
-//       toast({
-//         title: "Error",
-//         description: "You need to be logged in to send tokens",
-//         variant: "destructive",
-//       })
-//       return
-//     }
+  const onSubmit = async (values: FormValues) => {
 
-//     setIsSubmitting(true)
+    if(!userAuth?.authenticated){
+      errorToast("You need to be logged in to send tokens")
+      return;
+    }
 
-//     try {
-//       // Check if recipient is a valid Solana address
-//       let recipientAddress: string
+    const checkIfPublicKeyIsValid = (value: string) => {
+      try {
+        new PublicKey(value);
+        return true;
+      } catch (error) {
+        return false
+      }
+    }
 
-//       try {
-//         // Check if it's a valid public key
-//         new PublicKey(values.recipient)
-//         recipientAddress = values.recipient
-//       } catch (error) {
-//         // If not a valid public key, assume it's a username
-//         // In a real app, you would query your backend to resolve the username to an address
-//         toast({
-//           title: "Username not found",
-//           description: "Please enter a valid Solana address or registered username",
-//           variant: "destructive",
-//         })
-//         setIsSubmitting(false)
-//         return
-//       }
+    const TransferSol = async (recipientAddress: string) => {
+      try {
+        const amount = Number.parseFloat(values.amount);
+        
+          const connection = new Connection(clusterApiUrl('devnet'))
+          const transaction = new Transaction().add(
+            SystemProgram.transfer({
+              fromPubkey: new PublicKey(''),
+              toPubkey: new PublicKey(recipientAddress),
+              lamports: amount * 1e9, 
+            }),
+          )
+  
+          // Get recent blockhash
+          const { blockhash } = await connection.getLatestBlockhash()
+          transaction.recentBlockhash = blockhash
+          transaction.feePayer = new PublicKey('user.walletAddress')
+  
+          // Sign and send transaction using Civic Auth
+          // const signedTransaction = await .signTransaction(transaction)
+          let signedTransaction: any
+          const signature = await connection.sendRawTransaction(signedTransaction.serialize())
+  
+          // Wait for confirmation
+          await connection.confirmTransaction(signature)
 
-//       const amount = Number.parseFloat(values.amount)
+          successToast(`You sent ${amount} SOL to ${values.recipient}`)
+  
+          // Refresh balances
+          // await refreshBalances()
+  
+          // Reset form
+          form.reset()
+      } catch (error) {
+        console.error("Transaction error:", error)
+          errorToast((error as Error).message || "Please try again")
+      }
+    }
 
-//       if (values.token === "SOL") {
-//         // Create a Solana connection
-//         const connection = new Connection(clusterApiUrl("mainnet-beta"))
+    setIsSubmitting(true)
 
-//         // Create a transaction
-//         const transaction = new Transaction().add(
-//           SystemProgram.transfer({
-//             fromPubkey: new PublicKey(user.walletAddress),
-//             toPubkey: new PublicKey(recipientAddress),
-//             lamports: amount * 1e9, // Convert SOL to lamports
-//           }),
-//         )
-
-//         // Get recent blockhash
-//         const { blockhash } = await connection.getLatestBlockhash()
-//         transaction.recentBlockhash = blockhash
-//         transaction.feePayer = new PublicKey(user.walletAddress)
-
-//         // Sign and send transaction using Civic Auth
-//         const signedTransaction = await civicAuth.signTransaction(transaction)
-//         const signature = await connection.sendRawTransaction(signedTransaction.serialize())
-
-//         // Wait for confirmation
-//         await connection.confirmTransaction(signature)
-
-//         // Store transaction details (in a real app, you would store this in your backend)
-//         // For this demo, we're just showing a success message
-
-//         toast({
-//           title: "Transaction successful",
-//           description: `You sent ${amount} SOL to ${values.recipient}`,
-//         })
-
-//         // Refresh balances
-//         await refreshBalances()
-
-//         // Reset form
-//         form.reset()
-//       } else {
-//         // For SPL tokens, you would use the Token Program
-//         // This is more complex and requires additional libraries
-//         toast({
-//           title: "Not implemented",
-//           description: "SPL token transfers are not implemented in this demo",
-//           variant: "destructive",
-//         })
-//       }
-//     } catch (error) {
-//       console.error("Transaction error:", error)
-//       toast({
-//         title: "Transaction failed",
-//         description: (error as Error).message || "Please try again",
-//         variant: "destructive",
-//       })
-//     } finally {
-//       setIsSubmitting(false)
-//     }
-//   }
-
+    try {
+      const validPublicKey = checkIfPublicKeyIsValid(values.recipient);
+        if(validPublicKey) {
+          //transfer the token this way
+          TransferSol(values.recipient);
+        }
+        else {
+          
+          //check db for the person with the username
+          //get the wallet address of the person and append it to the transaction
+          TransferSol('');
+        }
+    } catch (error) {
+      errorToast("Please enter a valid Solana address or registered username")
+        setIsSubmitting(false)
+        return
+    } 
+  }
+    
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(() =>{
-        console.log('')
+        onSubmit(form.getValues())
       })} className="space-y-6">
         <FormField
           control={form.control}
@@ -145,7 +132,7 @@ export function SendTokensForm() {
               <FormControl>
                 <Input placeholder="Solana address or username" {...field} />
               </FormControl>
-              <FormDescription>Enter a Solana wallet address or ZeroPay username</FormDescription>
+              <FormDescription>Enter a Solana wallet address or VenSol username</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -203,7 +190,7 @@ export function SendTokensForm() {
           )}
         />
 
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
+        <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

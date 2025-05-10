@@ -4,8 +4,8 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-// import QRCode from "qrcode.react"
-import { Copy } from "lucide-react"
+import { QRCodeCanvas } from "qrcode.react"
+import {  Copy } from "lucide-react"
 import { toast } from "sonner"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
 import { Input } from "./ui/input"
@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Textarea } from "./ui/textarea"
 import { Button } from "./ui/button"
 import { Card, CardContent } from "./ui/card"
+import { UseWallet } from "../lib/use-wallet"
+import { errorToast } from "./my-custom-toast"
 
 
 const formSchema = z.object({
@@ -20,7 +22,7 @@ const formSchema = z.object({
   totalAmount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
     message: "Amount must be a positive number",
   }),
-  token: z.string().default("SOL"),
+  token: z.string(),
   numberOfPeople: z.string().refine((val) => !isNaN(Number(val)) && Number(val) >= 2 && Number(val) <= 20, {
     message: "Number of people must be between 2 and 20",
   }),
@@ -31,8 +33,9 @@ type FormValues = z.infer<typeof formSchema>
 
 export const SplitBillForm = () => {
   
-
-  const [qrData, setQrData] = useState<string | null>(null)
+  const { getWalletAddress } = UseWallet();
+  const [qrData, setQrData] = useState<string | null>(null);
+  
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -45,31 +48,36 @@ export const SplitBillForm = () => {
     },
   })
 
-//   const onSubmit = (values: FormValues) => {
-//     if (!user?.walletAddress) {
-//       return
-//     }
+  const onSubmit = (values: FormValues) => {  
 
-//     const totalAmount = Number.parseFloat(values.totalAmount)
-//     const numberOfPeople = Number.parseInt(values.numberOfPeople)
-//     const amountPerPerson = totalAmount / numberOfPeople
+    const totalAmount = Number.parseFloat(values.totalAmount)
+    const numberOfPeople = Number.parseInt(values.numberOfPeople)
+    const amountPerPerson = totalAmount / numberOfPeople
 
-//     // Create split bill data
-//     const splitBillData = {
-//       action: "splitBill",
-//       recipient: user.walletAddress,
-//       title: values.title,
-//       totalAmount: totalAmount.toString(),
-//       amountPerPerson: amountPerPerson.toString(),
-//       token: values.token,
-//       numberOfPeople,
-//       note: values.note || "",
-//     }
+    const recipient = getWalletAddress();
+    if(!recipient) {
+      errorToast('You need to be logged in to generate QR codes')
+      return;
+    }
+    const splitBillData = {
+      action: "splitBill",
+      recipient,
+      title: values.title,
+      totalAmount: totalAmount.toString(),
+      amountPerPerson: amountPerPerson.toString(),
+      token: values.token,
+      numberOfPeople,
+      note: values.note || "",
+    }
 
-//     // Convert to JSON string and encode for QR code
-//     const qrCodeData = JSON.stringify(splitBillData)
-//     setQrData(qrCodeData)
-//   }
+    const qrCodeData = JSON.stringify(splitBillData)
+    
+    const hashData = encodeURIComponent(qrCodeData);
+    const link = `http://localhost:5173/send-token?data=${hashData}`
+
+    setQrData(link)
+
+  }
 
   const copyToClipboard = () => {
     if (qrData) {
@@ -81,13 +89,13 @@ export const SplitBillForm = () => {
   return (
     <div className="space-y-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(()=>{console.log('hi')})} className="space-y-6">
+        <form onSubmit={form.handleSubmit(()=>onSubmit(form.getValues()))} className="space-y-6">
           <FormField
             control={form.control}
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Title</FormLabel>
+                <FormLabel className="">Title</FormLabel>
                 <FormControl>
                   <Input placeholder="Dinner at Restaurant" {...field} />
                 </FormControl>
@@ -163,7 +171,7 @@ export const SplitBillForm = () => {
             )}
           />
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full cursor-pointer">
             Generate Split Bill QR
           </Button>
         </form>
@@ -173,7 +181,7 @@ export const SplitBillForm = () => {
         <Card>
           <CardContent className="pt-6 flex flex-col items-center">
             <div className="bg-white p-4 rounded-lg">
-              {/* <QRCode value={qrData} size={200} /> */}
+              <QRCodeCanvas value={qrData} size={200} />
             </div>
             <p className="mt-4 text-sm text-center text-muted-foreground">
               Share this QR code with your friends to split the bill
@@ -183,7 +191,7 @@ export const SplitBillForm = () => {
               {Number.parseFloat(form.getValues().totalAmount) / Number.parseInt(form.getValues().numberOfPeople)}{" "}
               {form.getValues().token} per person
             </p>
-            <Button variant="outline" size="sm" className="mt-2" onClick={copyToClipboard}>
+            <Button variant="outline" size="sm" className="mt-2 cursor-pointer" onClick={copyToClipboard}>
               <Copy className="mr-2 h-4 w-4" />
               Copy Split Bill Data
             </Button>

@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react"
 
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
-import { formatAddress, formatDate } from "../utils/formatAddress"
+import { formatAddress, formatDate } from "../lib/utils"
 
 // Mock transaction data - in a real app, this would come from your backend
-const MOCK_TRANSACTIONS = [
+const MOCK_TRANSACTIONS : Array<Transaction> = [
   {
     id: "tx1",
     type: "send",
@@ -60,20 +60,25 @@ export function TransactionFeed() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // In a real app, you would fetch transactions from your backend
-    // For this demo, we're using mock data
+
     const fetchTransactions = async () => {
+      //get users wallet address and username
+      //check db to see to see if wallet address or username is sender or sender or receiver
+      //write logic to check if current logged in user is the sender or reciver
       try {
-        // Simulate API call
+        
         await new Promise((resolve) => setTimeout(resolve, 1000))
+        const user = {
+          walletAddress: '5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht'
+        };
 
-        // Filter transactions for the current user
-        // const userTransactions = MOCK_TRANSACTIONS.filter((tx) => {
-        //   if (!user?.walletAddress) return false
-        //   return tx.sender === user.walletAddress || tx.recipient === user.walletAddress
-        // })
+        
+        const userTransactions = MOCK_TRANSACTIONS.filter((tx) => {
+          if (!user?.walletAddress) return false
+          return tx.sender === user.walletAddress || tx.recipient === user.walletAddress
+        })
 
-        // setTransactions(userTransactions)
+        setTransactions([...userTransactions])
       } catch (error) {
         console.error("Error fetching transactions:", error)
       } finally {
@@ -81,10 +86,8 @@ export function TransactionFeed() {
       }
     }
 
-    // if (user?.walletAddress) {
-    //   fetchTransactions()
-    // }
-    // user?.walletAddress
+    fetchTransactions()
+    
   }, [])
 
   if (isLoading) {
