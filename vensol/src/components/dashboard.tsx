@@ -15,45 +15,40 @@ import { userHasWallet } from "@civic/auth-web3";
 import { toast } from "sonner"
 import { UseWallet } from "../lib/use-wallet"
 import { formatAddress } from "../lib/utils"
+import { useWallet } from "@solana/wallet-adapter-react"
+import type { WalletName } from "@solana/wallet-adapter-base"
 
 export const Dashboard = () => {
   const userAuth = useAuthProvider();
   const user = useUser();
+  const { connect, select } = useWallet()
   const [activeTab, setActiveTab] = useState("send")
   const { getWalletAddress } = UseWallet();
-  const [walletBalance, setWalletBalance] = useState<number>(()=>{
-    return userAuth?.refreshBalances()!
-  });
+  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [walletBalance, setWalletBalance] = useState<number>(0);
   
-  const walletAddress = getWalletAddress();
-
-  useEffect(()=>{
+  
+  useEffect(() => {
+    setWalletAddress(getWalletAddress()!)
     const createWallet = async () => {
-
-      if(user.user && !userHasWallet(user)){
+      if (!user || !user.user) return;
+      if (user.user && !userHasWallet(user)) {
         await user.createWallet();
       }
-      if(userHasWallet(user)) {
-        console.log(user.solana.address)
+      if (userHasWallet(user)) {
+        select('Civic Wallet' as WalletName);
+        await connect();
       }
-     
-    }
-
-    createWallet()
-  }, [user])
+    };
+    createWallet();
+  }, [user]);
 
   const refreshBalance = () => {
     const response = userAuth?.refreshBalances()!;
     setWalletBalance(response);
     toast('Wallet updated 🚀🚀')
   }
-  // if (!userAuth?.authenticated) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen">
-  //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-  //     </div>
-  //   )
-  // }
+ 
 
   return (
       <main className="flex-1 py-6">
@@ -92,7 +87,8 @@ export const Dashboard = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" className="w-full cursor-pointer" onClick={refreshBalance}>
+                <Button variant="outline" className="w-full cursor-pointer" 
+                onClick={refreshBalance}>
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Refresh Balances
                 </Button>

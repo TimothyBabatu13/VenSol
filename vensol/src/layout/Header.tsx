@@ -23,13 +23,15 @@ const LoggedInHeader = ({ userAuth, user } : {
     userAuth: ProviderType | undefined,
     user: Web3UserContextType
 }) => {
-
     return (
     <div className="flex items-center gap-4 ml-auto">
         <Button className="cursor-pointer" variant="ghost" size="icon" onClick={userAuth?.refreshBalances}>
             <RefreshCw className="h-5 w-5" />
         </Button>
-        <Button className="cursor-pointer" variant="ghost" size="icon" onClick={user.signOut}>
+        <Button className="cursor-pointer" variant="ghost" size="icon" onClick={()=>{
+          user.signOut()
+
+        }}>
             <LogOut className="h-5 w-5" />
         </Button>
     </div>
@@ -53,7 +55,6 @@ const Header = () => {
 
     const userAuth = useAuthProvider();
     const user = useUser();
-    // userAuth?.authenticated
   return (
     <div className="flex flex-col min-h-screen">
         <header className="border-b sticky top-0 z-10">
@@ -63,7 +64,7 @@ const Header = () => {
             <h1 className="text-2xl font-bold">VenSol</h1>
           </div>
           {
-            true ? 
+            userAuth?.authenticated ? 
             <LoggedInHeader 
                 user={user} 
                 userAuth={userAuth} 

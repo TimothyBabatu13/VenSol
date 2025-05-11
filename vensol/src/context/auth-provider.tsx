@@ -6,13 +6,12 @@ import { UseWallet } from "../lib/use-wallet"
 export interface ProviderType {
     authenticated: boolean,
     refreshBalances: () => number,
-    loading: boolean
+    loading: boolean,
 }
 const Provider = createContext<ProviderType>({
     authenticated: false,
     refreshBalances: () => 0,
-    loading: true
-    
+    loading: true,
 })
 
 export function CivicAuthProvider({ children }: { children: ReactNode }) {
@@ -22,7 +21,7 @@ export function CivicAuthProvider({ children }: { children: ReactNode }) {
         refreshBalances: ()=>{
             return getBalance()!
         },
-        loading: true
+        loading: true,
     })
     const user = useUser();
 
@@ -34,7 +33,14 @@ export function CivicAuthProvider({ children }: { children: ReactNode }) {
             authenticated: authStat === 'authenticated',
             loading: user.isLoading
         }))
+        if(!user.user?.id){
+            setUserState(prev => ({
+                ...prev,
+                authenticated: false
+            }))
+        } 
     }, [user])
+
   return (
     <Provider.Provider value={userState}>
         {children}

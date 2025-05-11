@@ -1,27 +1,22 @@
 import { useAuthProvider } from "../context/auth-provider"
 import { Dashboard } from "../components/dashboard";
 import { Toaster } from "../components/ui/sonner";
-// import { LandingPage } from "../components/landing-page";
 import { useEffect, useState } from "react";
 import { useUser } from "@civic/auth-web3/react";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { LandingPage } from "../components/landing-page";
 
 const Home = () => {
   const auth = useAuthProvider();
   const user = useUser();
-  // console.log(auth?.authenticated)
-  const [loading, setIsLoading] = useState<boolean>(true);
 
-  const connection = useConnection();
+  const [loading, setIsLoading] = useState<boolean>(true);
   const { publicKey } = useWallet();
 
   const arr = async () => {
-console.log(connection)
-    // console.log(publicKey)
+
     if (publicKey) {
-      // console.log(publicKey)
-      // const balance = await connection.connection.getBalance(publicKey);
-      // console.log(balance, 'from balance')
+      //get balance here
     }
   }
 
@@ -32,18 +27,22 @@ console.log(connection)
 
   
   useEffect(()=>{
-
     if(auth?.loading){
       setIsLoading(false);
     }
+    console.log(loading, user.isLoading)
   }, [user])
 
-  if(loading) return <Dashboard />
+  if (loading || user.isLoading) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>
+  )
 
   return (
     <div className="">
       {
-        auth?.authenticated ? <Dashboard /> : <Dashboard />
+        auth?.authenticated ? <Dashboard /> : <LandingPage />
       }
       <Toaster />
     </div>
