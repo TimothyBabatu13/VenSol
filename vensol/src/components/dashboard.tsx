@@ -4,12 +4,11 @@ import { Wallet, Send, QrCode, Clock, RefreshCw, Users, Copy } from "lucide-reac
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
-import { Avatar, AvatarFallback } from "./ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { SendTokensForm } from "./send-tokens-form"
 import { RequestTokensForm } from "./request-tokens-form"
 import { TransactionFeed } from "./transaction-feed"
 import { SplitBillForm } from "./split-bill-form"
-import { useAuthProvider } from "../context/auth-provider"
 import { useUser } from "@civic/auth-web3/react"
 import { userHasWallet } from "@civic/auth-web3";
 import { toast } from "sonner"
@@ -20,17 +19,17 @@ import type { WalletName } from "@solana/wallet-adapter-base"
 import { successToast } from "./my-custom-toast"
 
 export const Dashboard = () => {
-  const userAuth = useAuthProvider();
   const user = useUser();
   const { connect, select } = useWallet()
   const [activeTab, setActiveTab] = useState("send")
   const { getWalletAddress } = UseWallet();
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [walletBalance, setWalletBalance] = useState<number>(0);
-  
+  const { getBalance } = UseWallet();
   
   useEffect(() => {
     setWalletAddress(getWalletAddress()!)
+
     const createWallet = async () => {
       if (!user || !user.user) return;
       if (user.user && !userHasWallet(user)) {
@@ -44,9 +43,18 @@ export const Dashboard = () => {
     createWallet();
   }, [user]);
 
+  useEffect(()=>{
+    //go through this
+    /*
+    I dont know why the hell this code is not working
+    */
+    console.log(getBalance())
+    setWalletBalance(getBalance()!)
+  }, [user.user])
+
   const refreshBalance = () => {
-    const response = userAuth?.refreshBalances()!;
-    setWalletBalance(response);
+    const response = getBalance();
+    setWalletBalance(response!);
     toast('Wallet updated 🚀🚀')
   }
  
@@ -63,6 +71,10 @@ export const Dashboard = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Avatar>
+                    <AvatarImage 
+                      src={user?.user?.picture}
+                      draggable={false}
+                    />
                     <AvatarFallback>
                       {user.user?.username ? user.user?.username.substring(0, 2).toUpperCase() : "WA"}
                     </AvatarFallback>
