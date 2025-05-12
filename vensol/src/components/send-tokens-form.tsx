@@ -13,6 +13,10 @@ import { Textarea } from "./ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { useAuthProvider } from "../context/auth-provider"
 import { errorToast, successToast } from "./my-custom-toast"
+// import { getUserName } from "../lib/firebase-helpers"
+import { isUsernameOrPublicKey } from "../lib/utils"
+// import { useWallet } from "@solana/wallet-adapter-react"
+
 
 const formSchema = z.object({
   recipient: z.string().min(1, "Recipient is required"),
@@ -29,7 +33,7 @@ export const SendTokensForm = () => {
 
 
   const userAuth = useAuthProvider();
-
+  // const { publicKey } = useWallet();
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<FormValues>({
@@ -48,15 +52,23 @@ export const SendTokensForm = () => {
       errorToast("You need to be logged in to send tokens")
       return;
     }
+    const result = isUsernameOrPublicKey(values.recipient);
 
     const checkIfPublicKeyIsValid = (value: string) => {
       try {
-        new PublicKey(value);
+        const result = new PublicKey(value);
+        console.log(result)
         return true;
       } catch (error) {
         return false
       }
     }
+
+    if(result === 'walletAddress') {
+      const result = checkIfPublicKeyIsValid(values.recipient);
+      console.log(result); 
+    }
+    
 
     const TransferSol = async (recipientAddress: string) => {
       try {

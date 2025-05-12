@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@civic/auth-web3/react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { LandingPage } from "../components/landing-page";
+import { createAccount } from "../lib/firebase-helpers";
 
 const Home = () => {
   const auth = useAuthProvider();
@@ -13,17 +14,19 @@ const Home = () => {
   const [loading, setIsLoading] = useState<boolean>(true);
   const { publicKey } = useWallet();
 
-  const arr = async () => {
-
+  const ceateAccount = async () => {
     if (publicKey) {
-      //get balance here
+      const wallet = publicKey.toString();
+      console.log(wallet)
+      createAccount({
+        userWallet: wallet
+      })
     }
   }
 
   useEffect(() =>{
-
-    arr()
-  }, [])
+    ceateAccount()
+  }, [user.user])
 
   
   useEffect(()=>{

@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { errorToast } from "../components/my-custom-toast"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -36,4 +37,17 @@ export function formatDate(timestamp: number): string {
   }
 
   return date.toLocaleDateString()
+}
+
+export const isUsernameOrPublicKey = (value: string) : ('username' | 'walletAddress' | undefined) => {
+  if(!value.trim()) {
+    errorToast('Please provide a valid username or wallet address');
+    return;
+  }
+  console.log(value.length)
+  if(value.length <= 14){
+    return 'username';
+  }
+  return 'walletAddress';
+
 }

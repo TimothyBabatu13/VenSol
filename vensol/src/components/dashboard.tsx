@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react"
-import { Wallet, Send, QrCode, Clock, RefreshCw, Users } from "lucide-react"
+import { Wallet, Send, QrCode, Clock, RefreshCw, Users, Copy } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
@@ -17,6 +17,7 @@ import { UseWallet } from "../lib/use-wallet"
 import { formatAddress } from "../lib/utils"
 import { useWallet } from "@solana/wallet-adapter-react"
 import type { WalletName } from "@solana/wallet-adapter-base"
+import { successToast } from "./my-custom-toast"
 
 export const Dashboard = () => {
   const userAuth = useAuthProvider();
@@ -69,7 +70,18 @@ export const Dashboard = () => {
                   <div>
                     <p className="font-medium">{user.user?.username || "Wallet Owner"}</p>
                     <p className="text-xs text-muted-foreground">
-                      {walletAddress ? formatAddress(walletAddress) : "No wallet connected"}
+                      {walletAddress ? <span className="flex w-full items-center">
+                        {formatAddress(walletAddress)}
+                        <Copy 
+                          className="ml-5 cursor-pointer" 
+                          size={12}
+                          onClick={() => {
+                            navigator.clipboard.writeText(walletAddress);
+                            successToast('Wallet address copied')
+                          }}
+                        />
+                      </span>
+                       : "No wallet connected"}
                     </p>
                   </div>
                 </div>
