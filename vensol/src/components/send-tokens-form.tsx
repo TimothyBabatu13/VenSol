@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { PublicKey, Transaction, SystemProgram, Connection, clusterApiUrl } from "@solana/web3.js"
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js"
 import { Loader2 } from "lucide-react"
 import { Button } from "./ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
@@ -13,10 +13,8 @@ import { Textarea } from "./ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { useAuthProvider } from "../context/auth-provider"
 import { errorToast, successToast } from "./my-custom-toast"
-// import { getUserName } from "../lib/firebase-helpers"
-import { isUsernameOrPublicKey } from "../lib/utils"
-import { SendSol } from "../lib/solana-transaction"
-// import { useWallet } from "@solana/wallet-adapter-react"
+import { useWalletDetailsProvider } from "../context/wallet-info"
+import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 
 
 const formSchema = z.object({
@@ -34,6 +32,9 @@ export const SendTokensForm = () => {
 
 
   const userAuth = useAuthProvider();
+  const wallet = useWalletDetailsProvider()
+  const { sendTransaction } = useWallet()
+  const { connection } = useConnection()
   // const { publicKey } = useWallet();
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -53,83 +54,50 @@ export const SendTokensForm = () => {
       errorToast("You need to be logged in to send tokens")
       return;
     }
-    const result = isUsernameOrPublicKey(values.recipient);
+    // 32PnHdJiXaLZjcx3RtJin8TJYysbwGvvDcHLYDeSVmbf
 
-    const checkIfPublicKeyIsValid = (value: string) => {
+    const sendSol = async () => {
+      setIsSubmitting(true)
       try {
-        const result = new PublicKey(value);
-        console.log(result)
-        return true;
-      } catch (error) {
-        return false
-      }
-    }
+        const toPubkey = new PublicKey(values.recipient);
+      const lamports = Number(values.amount) * LAMPORTS_PER_SOL as number;
+      const fromPubkey = new PublicKey(wallet.walletAddress)
 
-    if(result === 'walletAddress') {
-      const result = checkIfPublicKeyIsValid(values.recipient);
-      console.log(result); 
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports,
+        })
+      );
+
+      const signature = await sendTransaction(transaction, connection);
+      const latestBlockhash = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({
+        signature,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      },
+      "confirmed");
+      const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+      successToast(`${values.token} sent 🚀🚀`)
+      console.log(explorerUrl)
+      } catch (error) {
+
+      }
+      finally{
+        setIsSubmitting(false)
+      }
+
     }
     
+    sendSol()
 
-    // const TransferSol = async (recipientAddress: string) => {
-    //   try {
-    //     const amount = Number.parseFloat(values.amount);
-        
-    //       const connection = new Connection(clusterApiUrl('devnet'))
-    //       const transaction = new Transaction().add(
-    //         SystemProgram.transfer({
-    //           fromPubkey: new PublicKey(''),
-    //           toPubkey: new PublicKey(recipientAddress),
-    //           lamports: amount * 1e9, 
-    //         }),
-    //       )
-  
-    //       // Get recent blockhash
-    //       const { blockhash } = await connection.getLatestBlockhash()
-    //       transaction.recentBlockhash = blockhash
-    //       transaction.feePayer = new PublicKey('user.walletAddress')
-  
-    //       // Sign and send transaction using Civic Auth
-    //       // const signedTransaction = await .signTransaction(transaction)
-    //       let signedTransaction: any
-    //       const signature = await connection.sendRawTransaction(signedTransaction.serialize())
-  
-    //       // Wait for confirmation
-    //       await connection.confirmTransaction(signature)
+    // setIsSubmitting(true)
 
-    //       successToast(`You sent ${amount} SOL to ${values.recipient}`)
-  
-    //       // Refresh balances
-    //       // await refreshBalances()
-  
-    //       // Reset form
-    //       form.reset()
-    //   } catch (error) {
-    //     console.error("Transaction error:", error)
-    //       errorToast((error as Error).message || "Please try again")
-    //   }
-    // }
-
-    setIsSubmitting(true)
-
-    SendSol({amount: 2, recipient: '8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK'})
-    try {
-      const validPublicKey = checkIfPublicKeyIsValid(values.recipient);
-        if(validPublicKey) {
-          //transfer the token this way
-          // TransferSol(values.recipient);
-        }
-        else {
-          
-          //check db for the person with the username
-          //get the wallet address of the person and append it to the transaction
-          // TransferSol('');
-        }
-    } catch (error) {
-      errorToast("Please enter a valid Solana address or registered username")
-        setIsSubmitting(false)
-        return
-    } 
+    // SendSol({amount: 2, recipient: '8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK'})
+    
+    
   }
     
   return (
