@@ -1,5 +1,5 @@
 
-import { ArrowRight, Wallet, Send, Clock } from "lucide-react"
+import { ArrowRight, Send, Clock } from "lucide-react"
 import { Button } from "./ui/button"
 import { DrawerDemo } from "../layout/Header";
 
@@ -24,11 +24,6 @@ const Card = ({ icon, name, details } : CardProp) => {
 const Cards = () => {
   const data : Array<CardProp> = [
     {
-      details: 'Automatically generate a Solana wallet when you sign in with VenSol.',
-      icon: <Wallet className="h-10 w-10 text-primary" />,
-      name: 'Embedded Wallet'
-    },
-    {
       details: 'Send SOL and SPL tokens to friends or request payments via QR codes.',
       icon: <Send className="h-10 w-10 text-primary" />,
       name: 'Send & Request'
@@ -41,7 +36,7 @@ const Cards = () => {
 
   ]
   return(
-    <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-2">
       {data.map(({details, name, icon}) => (
         <Card 
           key={crypto.randomUUID()}
