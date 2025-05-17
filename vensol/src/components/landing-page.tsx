@@ -1,7 +1,7 @@
 
 import { ArrowRight, Wallet, Send, Clock } from "lucide-react"
 import { Button } from "./ui/button"
-import { useUser } from "@civic/auth-web3/react";
+import { DrawerDemo } from "../layout/Header";
 
 interface CardProp {
   icon: React.ReactNode,
@@ -56,7 +56,6 @@ const Cards = () => {
 
 export const LandingPage = () => {
 
-    const user = useUser();
   return (
       <main className="flex-1">
         <section className="py-20 bg-gradient-to-b from-background to-muted">
@@ -69,13 +68,14 @@ export const LandingPage = () => {
                   blockchain.
                 </p>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button 
-                    size="lg"
-                    onClick={()=>user.signIn()}
-                    className="cursor-pointer"
-                  >
-                    Get Started <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <DrawerDemo>
+                    <Button 
+                      size="lg"
+                      className="cursor-pointer"
+                    >
+                      Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DrawerDemo>
                 </div>
               </div>
               <div className="mx-auto lg:ml-auto">

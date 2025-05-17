@@ -48,7 +48,9 @@ const LoggedInHeader = () => {
 
 
 
-function DrawerDemo() {
+export function DrawerDemo({ children } : {
+  children: React.ReactNode
+}) {
 
   const { select, connect, wallets } = useWallet()
 
@@ -61,10 +63,7 @@ function DrawerDemo() {
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button
-            className="cursor-pointer">
-            Sign In
-          </Button>
+        {children}
       </DrawerTrigger>
       <DrawerContent className="text-center">
         <div className="mx-auto w-full max-w-sm">
@@ -117,7 +116,12 @@ const NotUntheticatedHeader = () => {
 
     return (
       <>
-      <DrawerDemo />
+      <DrawerDemo> 
+        <Button
+            className="cursor-pointer">
+            Sign In
+          </Button>
+      </DrawerDemo>
       </>
     )
 }

@@ -8,7 +8,6 @@ export const SendSol = async ({ recipient, amount } : {
     note?: string
 }) => {
 
-
     const connection = new Connection('https://api.devnet.solana.com');
     const { publicKey, sendTransaction } = useWallet();
     try {
