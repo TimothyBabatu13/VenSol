@@ -1,22 +1,31 @@
-import { CivicAuthProvider } from "@civic/auth-web3/react";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { clusterApiUrl } from "@solana/web3.js";
+import { network } from "../lib/utils";
 import { useMemo } from "react";
+import { clusterApiUrl } from "@solana/web3.js";
+import WalletContext from "./wallet-info";
+import {
+  PhantomWalletAdapter,
+  SolflareWalletAdapter,
+} from "@solana/wallet-adapter-wallets";
+import { CivicAuthProvider } from "./auth-provider";
 
 const Connection = ({ children }: {
     children: React.ReactNode
 }) => {
-
-  const network = WalletAdapterNetwork.Devnet
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  const wallets = useMemo(()=>[
+    new PhantomWalletAdapter(),
+    new SolflareWalletAdapter()
+  ], [network])
 
   return (
     <ConnectionProvider endpoint={endpoint}> 
-    <WalletProvider wallets={[]} autoConnect> 
+    <WalletProvider wallets={wallets} autoConnect> 
       <WalletModalProvider>
-        {children}
+        <WalletContext>
+          {children}
+        </WalletContext>
        </WalletModalProvider>
     </WalletProvider>
     </ConnectionProvider>
@@ -27,14 +36,14 @@ const Connection = ({ children }: {
 export const CivicProvider = ( { children } : {
   children: React.ReactNode
 } ) => {
-  const API_KEY = import.meta.env.VITE_CIVIC_KEY
+  // const API_KEY = import.meta.env.VITE_CIVIC_KEY
   return(
     <Connection>
-      <CivicAuthProvider 
-        clientId={API_KEY}
-      >
+      <CivicAuthProvider>
+
         {children}
       </CivicAuthProvider>
+      
     </Connection>
   )
 }

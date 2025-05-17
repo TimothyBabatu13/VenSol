@@ -1,48 +1,32 @@
 
-import { useUser } from "@civic/auth-web3/react"
+import { useWallet } from "@solana/wallet-adapter-react";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { UseWallet } from "../lib/use-wallet"
+
 
 export interface ProviderType {
     authenticated: boolean,
-    refreshBalances: () => number,
-    loading: boolean,
 }
 const Provider = createContext<ProviderType>({
-    authenticated: false,
-    refreshBalances: () => 0,
-    loading: true,
+    authenticated: false
 })
 
 export function CivicAuthProvider({ children }: { children: ReactNode }) {
-    const { getBalance } = UseWallet()
-    const [userState, setUserState] = useState<ProviderType>({
-        authenticated: false,
-        refreshBalances: ()=>{
-            return getBalance()!
-        },
-        loading: true,
-    })
-    const user = useUser();
-
-    const authStat = user.authStatus;
     
-    useEffect(()=>{
-        setUserState(prev => ({
-            ...prev,
-            authenticated: authStat === 'authenticated',
-            loading: user.isLoading
-        }))
-        if(!user.user?.id){
-            setUserState(prev => ({
-                ...prev,
-                authenticated: false
-            }))
-        } 
-    }, [user])
+    const [auth, setAuth] = useState<ProviderType>({
+        authenticated: false,
+    });
+    const { connected, connecting, disconnecting } = useWallet()
 
+    useEffect(()=>{
+
+        setAuth(prev => ({
+            ...prev,
+            authenticated: connected
+        }))
+
+    }, [connected, connecting, disconnecting])
   return (
-    <Provider.Provider value={userState}>
+    <Provider.Provider value={auth}>
         {children}
     </Provider.Provider>
   )

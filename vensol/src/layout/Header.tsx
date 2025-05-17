@@ -1,9 +1,12 @@
-import { LogOut, RefreshCw, Wallet } from "lucide-react"
+import { LogOut, RefreshCw, Wallet as WalletIcon } from "lucide-react"
 import { Button } from "../components/ui/button"
-import { useUser } from "@civic/auth-web3/react";
-import { useAuthProvider, type ProviderType } from "../context/auth-provider";
-import type { Web3UserContextType } from "@civic/auth-web3";
+import { useAuthProvider } from "../context/auth-provider";
 import { Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../components/ui/drawer";
+import { Card, CardContent } from "../components/ui/card";
+import type { WalletName } from "@solana/wallet-adapter-base";
 
 const Footer = () => {
     const date = new Date();
@@ -19,19 +22,23 @@ const Footer = () => {
     )
 }
 
-const LoggedInHeader = ({ userAuth, user } : {
-    userAuth: ProviderType | undefined,
-    user: Web3UserContextType
-}) => {
+const LoggedInHeader = () => {
+
+  const { disconnect } = useWallet()
+  const handleLogout = () => {
+    disconnect()
+  }
     return (
     <div className="flex items-center gap-4 ml-auto">
-        <Button className="cursor-pointer" variant="ghost" size="icon" onClick={userAuth?.refreshBalances}>
+        <Button className="cursor-pointer" variant="ghost" size="icon">
             <RefreshCw className="h-5 w-5" />
         </Button>
-        <Button className="cursor-pointer" variant="ghost" size="icon" onClick={()=>{
-          user.signOut()
-
-        }}>
+        <Button 
+          className="cursor-pointer" 
+          variant="ghost" 
+          size="icon"
+          onClick={handleLogout}
+        >
             <LogOut className="h-5 w-5" />
         </Button>
     </div>
@@ -39,39 +46,118 @@ const LoggedInHeader = ({ userAuth, user } : {
     )
 }
 
-const NotUntheticatedHeader = ({ user } : {
-    user: Web3UserContextType
-}) => {
-    return (
-          <Button
-            className="cursor-pointer" 
-            onClick={()=>user.signIn()} disabled={user.isLoading}>
-            {user.isLoading ? "Loading..." : "Sign In with Civic"}
+
+
+function DrawerDemo() {
+
+  const { select, connect, wallets } = useWallet()
+
+  const handleConnect = (name: string) => {
+    select(name as WalletName)
+    connect()
+  }
+
+
+  return (
+    <Drawer>
+      <DrawerTrigger asChild>
+        <Button
+            className="cursor-pointer">
+            Sign In
           </Button>
+      </DrawerTrigger>
+      <DrawerContent className="text-center">
+        <div className="mx-auto w-full max-w-sm">
+          <DrawerHeader>
+            <DrawerTitle>
+              <p className="text-3xl font-bold tracking-tight">Connect Wallet</p>
+            </DrawerTitle>
+            <DrawerDescription className="text-muted-foreground">
+              Select a wallet from the list below to connect
+            </DrawerDescription>
+          </DrawerHeader>
+          
+          <DrawerFooter className="overflow-y-auto mb-5">
+            {
+              wallets.map((wallet) =>(
+                <Card key={wallet.adapter.name} className="overflow-hidden border border-slate-200 dark:border-slate-800">
+                  <CardContent className="p-0">
+                    <div className="flex items-center justify-between p-4">
+                      <div className="flex items-center space-x-4">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center`}>
+                          <img src={wallet.adapter.icon} alt={wallet.adapter.icon} className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h3 className="font-medium">{wallet.adapter.name}</h3>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="rounded-full cursor-pointer"
+                        onClick={() => handleConnect(wallet.adapter.name)}
+                      >
+                        Connect
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) )
+            }
+            <DrawerClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  )
+}
+
+const NotUntheticatedHeader = () => {
+
+    return (
+      <>
+      <DrawerDemo />
+      </>
     )
 }
+
 
 const Header = () => {
 
     const userAuth = useAuthProvider();
-    const user = useUser();
+
+    const [headerBg, setHeaderBg] = useState<boolean>(false);
+
+    useEffect(()=>{
+      const isActive = () => {
+        if(window){
+          setHeaderBg(window.scrollY > 30);
+        }
+      }
+      window.addEventListener('scroll', isActive)
+      return () => {
+        if(window) {
+          window.removeEventListener('scroll', isActive)
+        }
+      }
+    })
+
   return (
-    <div className="flex flex-col min-h-screen">
-        <header className="border-b sticky top-0 z-10">
+    <div className={`flex flex-col min-h-screen`}>
+        <header className={`border-b sticky top-0 z-10 transition-all ${headerBg ? 'bg-white' : ''}`}>
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-2">
-            <Wallet className="h-6 w-6 text-primary" />
+            <WalletIcon className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold">VenSol</h1>
           </div>
           {
             userAuth?.authenticated ? 
             <LoggedInHeader 
-                user={user} 
-                userAuth={userAuth} 
             /> : 
             <NotUntheticatedHeader 
-                user={user}
             />
+            
           }
         </div>
       </header>

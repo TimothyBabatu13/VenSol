@@ -1,10 +1,14 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { errorToast } from "../components/my-custom-toast"
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+export const network = WalletAdapterNetwork.Devnet
+
 
 export function formatAddress(address: string): string {
   if (!address) return ""

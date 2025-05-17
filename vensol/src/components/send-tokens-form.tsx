@@ -15,6 +15,7 @@ import { useAuthProvider } from "../context/auth-provider"
 import { errorToast, successToast } from "./my-custom-toast"
 // import { getUserName } from "../lib/firebase-helpers"
 import { isUsernameOrPublicKey } from "../lib/utils"
+import { SendSol } from "../lib/solana-transaction"
 // import { useWallet } from "@solana/wallet-adapter-react"
 
 
@@ -70,58 +71,59 @@ export const SendTokensForm = () => {
     }
     
 
-    const TransferSol = async (recipientAddress: string) => {
-      try {
-        const amount = Number.parseFloat(values.amount);
+    // const TransferSol = async (recipientAddress: string) => {
+    //   try {
+    //     const amount = Number.parseFloat(values.amount);
         
-          const connection = new Connection(clusterApiUrl('devnet'))
-          const transaction = new Transaction().add(
-            SystemProgram.transfer({
-              fromPubkey: new PublicKey(''),
-              toPubkey: new PublicKey(recipientAddress),
-              lamports: amount * 1e9, 
-            }),
-          )
+    //       const connection = new Connection(clusterApiUrl('devnet'))
+    //       const transaction = new Transaction().add(
+    //         SystemProgram.transfer({
+    //           fromPubkey: new PublicKey(''),
+    //           toPubkey: new PublicKey(recipientAddress),
+    //           lamports: amount * 1e9, 
+    //         }),
+    //       )
   
-          // Get recent blockhash
-          const { blockhash } = await connection.getLatestBlockhash()
-          transaction.recentBlockhash = blockhash
-          transaction.feePayer = new PublicKey('user.walletAddress')
+    //       // Get recent blockhash
+    //       const { blockhash } = await connection.getLatestBlockhash()
+    //       transaction.recentBlockhash = blockhash
+    //       transaction.feePayer = new PublicKey('user.walletAddress')
   
-          // Sign and send transaction using Civic Auth
-          // const signedTransaction = await .signTransaction(transaction)
-          let signedTransaction: any
-          const signature = await connection.sendRawTransaction(signedTransaction.serialize())
+    //       // Sign and send transaction using Civic Auth
+    //       // const signedTransaction = await .signTransaction(transaction)
+    //       let signedTransaction: any
+    //       const signature = await connection.sendRawTransaction(signedTransaction.serialize())
   
-          // Wait for confirmation
-          await connection.confirmTransaction(signature)
+    //       // Wait for confirmation
+    //       await connection.confirmTransaction(signature)
 
-          successToast(`You sent ${amount} SOL to ${values.recipient}`)
+    //       successToast(`You sent ${amount} SOL to ${values.recipient}`)
   
-          // Refresh balances
-          // await refreshBalances()
+    //       // Refresh balances
+    //       // await refreshBalances()
   
-          // Reset form
-          form.reset()
-      } catch (error) {
-        console.error("Transaction error:", error)
-          errorToast((error as Error).message || "Please try again")
-      }
-    }
+    //       // Reset form
+    //       form.reset()
+    //   } catch (error) {
+    //     console.error("Transaction error:", error)
+    //       errorToast((error as Error).message || "Please try again")
+    //   }
+    // }
 
     setIsSubmitting(true)
 
+    SendSol({amount: 2, recipient: '8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK'})
     try {
       const validPublicKey = checkIfPublicKeyIsValid(values.recipient);
         if(validPublicKey) {
           //transfer the token this way
-          TransferSol(values.recipient);
+          // TransferSol(values.recipient);
         }
         else {
           
           //check db for the person with the username
           //get the wallet address of the person and append it to the transaction
-          TransferSol('');
+          // TransferSol('');
         }
     } catch (error) {
       errorToast("Please enter a valid Solana address or registered username")

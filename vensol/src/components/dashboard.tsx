@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Wallet, Send, QrCode, Clock, RefreshCw, Users, Copy } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Button } from "./ui/button"
@@ -9,56 +9,26 @@ import { SendTokensForm } from "./send-tokens-form"
 import { RequestTokensForm } from "./request-tokens-form"
 import { TransactionFeed } from "./transaction-feed"
 import { SplitBillForm } from "./split-bill-form"
-import { useUser } from "@civic/auth-web3/react"
-import { userHasWallet } from "@civic/auth-web3";
-import { toast } from "sonner"
-import { UseWallet } from "../lib/use-wallet"
 import { formatAddress } from "../lib/utils"
-import { useWallet } from "@solana/wallet-adapter-react"
-import type { WalletName } from "@solana/wallet-adapter-base"
 import { successToast } from "./my-custom-toast"
+import { WalletComponent } from "./wallet"
+import { useWalletDetailsProvider } from "../context/wallet-info"
+import { LAMPORTS_PER_SOL } from "@solana/web3.js"
 
 export const Dashboard = () => {
-  const user = useUser();
-  const { connect, select } = useWallet()
-  const [activeTab, setActiveTab] = useState("send")
-  const { getWalletAddress } = UseWallet();
-  const [walletAddress, setWalletAddress] = useState<string>('');
-  const [walletBalance, setWalletBalance] = useState<number>(0);
-  const { getBalance } = UseWallet();
   
-  useEffect(() => {
-    setWalletAddress(getWalletAddress()!)
-
-    const createWallet = async () => {
-      if (!user || !user.user) return;
-      if (user.user && !userHasWallet(user)) {
-        await user.createWallet();
-      }
-      if (userHasWallet(user)) {
-        select('Civic Wallet' as WalletName);
-        await connect();
-      }
-    };
-    createWallet();
-  }, [user]);
-
-  useEffect(()=>{
-    //go through this
-    /*
-    I dont know why the hell this code is not working
-    */
-    console.log(getBalance())
-    setWalletBalance(getBalance()!)
-  }, [user.user])
+  
+  const [activeTab, setActiveTab] = useState("send")
+  
+  const wallet = useWalletDetailsProvider();
 
   const refreshBalance = () => {
-    const response = getBalance();
-    setWalletBalance(response!);
-    toast('Wallet updated 🚀🚀')
+    wallet.refresh();
+    successToast('Balance updated 🚀🚀') 
   }
- 
 
+  
+ 
   return (
       <main className="flex-1 py-6">
         <div className="grid gap-6 md:grid-cols-[300px_1fr]">
@@ -72,23 +42,23 @@ export const Dashboard = () => {
                 <div className="flex items-center gap-3">
                   <Avatar>
                     <AvatarImage 
-                      src={user?.user?.picture}
+                      // src={user?.user?.picture}
                       draggable={false}
                     />
                     <AvatarFallback>
-                      {user.user?.username ? user.user?.username.substring(0, 2).toUpperCase() : "WA"}
+                      {/* {user.user?.username ? user.user?.username.substring(0, 2).toUpperCase() : "WA"} */}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{user.user?.username || "Wallet Owner"}</p>
+                    <p className="font-medium">{false || "Wallet Owner"}</p>
                     <p className="text-xs text-muted-foreground">
-                      {walletAddress ? <span className="flex w-full items-center">
-                        {formatAddress(walletAddress)}
+                      {wallet.walletAddress ? <span className="flex w-full items-center">
+                        {formatAddress(wallet.walletAddress)}
                         <Copy 
                           className="ml-5 cursor-pointer" 
                           size={12}
                           onClick={() => {
-                            navigator.clipboard.writeText(walletAddress);
+                            navigator.clipboard.writeText(wallet.walletAddress);
                             successToast('Wallet address copied')
                           }}
                         />
@@ -100,7 +70,7 @@ export const Dashboard = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <p className="text-sm text-muted-foreground">SOL Balance</p>
-                    <p className="font-medium">{walletBalance?.toFixed(4)} SOL</p>
+                    <p className="font-medium">{Number(wallet.walletBalance?.toFixed(4)) / LAMPORTS_PER_SOL} SOL</p>
                   </div>
                   {/* {Object.entries(user.tokenBalances).map(([token, balance]) => (
                     <div key={token} className="flex justify-between">
@@ -169,7 +139,12 @@ export const Dashboard = () => {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="wallet" className="md:hidden">
+              <TabsContent value="wallet">
+                <WalletComponent 
+                  // user={user}
+                  walletAddress={wallet.walletAddress}
+                  walletBalance={wallet.walletBalance}
+                />
                 {/* Mobile wallet view - already shown in sidebar for desktop */}
               </TabsContent>
 
