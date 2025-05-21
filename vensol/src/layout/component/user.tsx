@@ -56,13 +56,18 @@ const ProfilePanel = ({isOpen, onClose, userDetails}: {
     setIsSaving(true);
 
     try {
-        const result = await uploadImage({
+        await uploadImage({
             walletAddress: userDetails.walletAddress,
             file: editableUserDetails.image!,
             bio: editableUserDetails.bio,
             username: editableUserDetails.username
         })
-        console.log(result)
+        setEditableUsersDetail((prev) => ({
+            ...prev,
+            previewURL: ''
+        }))
+
+
     } catch (error) {
         console.log(error as string)
     }
@@ -91,11 +96,11 @@ const ProfilePanel = ({isOpen, onClose, userDetails}: {
                         <div className="relative">
                             <Avatar className="h-24 w-24 border-4 border-white shadow-md">
                                 <AvatarImage 
-                                    src={editableUserDetails.previewURL ?  editableUserDetails.previewURL : editableUserDetails.profileURL} 
+                                    src={editableUserDetails.previewURL ?  editableUserDetails.previewURL : userDetails.profileURL} 
                                     alt={`${editableUserDetails.username} image`} 
                                 />
                                 <AvatarFallback 
-                                    className="text-lg">{editableUserDetails.username.slice(0, 2).toUpperCase()}
+                                    className="text-lg">{userDetails.username.slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                             </Avatar>
                             <Button
@@ -135,7 +140,7 @@ const ProfilePanel = ({isOpen, onClose, userDetails}: {
                             <Input 
                                 id="username" 
                                 name="username" 
-                                value={editableUserDetails.username} 
+                                value={editableUserDetails.username ? editableUserDetails.username : userDetails.username} 
                                 onChange={handleUserDetailsChange}
                             />
                         </div>
@@ -164,7 +169,7 @@ const ProfilePanel = ({isOpen, onClose, userDetails}: {
                             <Textarea
                                 id="bio"
                                 name="bio"
-                                value={editableUserDetails.bio}
+                                value={editableUserDetails.bio ? editableUserDetails.bio : userDetails.bio}
                                 onChange={handleUserDetailsChange}
                                 className="min-h-[100px] resize-none"
                             />
@@ -172,14 +177,14 @@ const ProfilePanel = ({isOpen, onClose, userDetails}: {
                     </div>
                 </div>
                 <div className="mt-8 mx-3 pb-3 flex justify-end space-x-4">
-                    <Button variant="outline" onClick={onClose}>Cancel</Button>
+                    <Button variant="outline" className="cursor-pointer" onClick={onClose}>Cancel</Button>
                     <Button 
                         onClick={handleSave}
                         className="cursor-pointer"
                         disabled={saving}
                     >
                         {
-                            saving ? '' : 'Save Changes'
+                            saving ? 'Saving...' : 'Save Changes'
                         }
                     </Button>
                 </div>

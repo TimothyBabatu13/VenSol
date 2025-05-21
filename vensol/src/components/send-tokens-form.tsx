@@ -15,6 +15,7 @@ import { useAuthProvider } from "../context/auth-provider"
 import { errorToast, successToast } from "./my-custom-toast"
 import { useWalletDetailsProvider } from "../context/wallet-info"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
+import { AddFinalTransaction, AddInitialTransaction } from "../lib/firebase-helpers"
 
 
 const formSchema = z.object({
@@ -71,6 +72,12 @@ export const SendTokensForm = () => {
         })
       );
 
+      await AddInitialTransaction({
+        amount: lamports.toString(),
+        receiver: toPubkey.toString(),
+        sender: fromPubkey.toString(),
+      });
+
       const signature = await sendTransaction(transaction, connection);
       const latestBlockhash = await connection.getLatestBlockhash();
       await connection.confirmTransaction({
@@ -79,6 +86,11 @@ export const SendTokensForm = () => {
         lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
       },
       "confirmed");
+      await AddFinalTransaction({
+        amount: lamports.toString(),
+        receiver: toPubkey.toString(),
+        sender: fromPubkey.toString(),
+      });
       const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
       successToast(`${values.token} sent 🚀🚀`)
       wallet.refresh()

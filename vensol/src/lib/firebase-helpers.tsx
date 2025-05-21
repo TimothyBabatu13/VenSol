@@ -10,6 +10,7 @@ export interface userType {
 }
 
 const usersRef = collection(db, "users");
+const transactionRef = collection(db, 'transactions');
 
 export const createAccount = async ({ userWallet } : {
     userWallet: string,
@@ -93,6 +94,7 @@ export const uploadImage = async ({ file, walletAddress, bio, username } : {
     username: string
 }) => {
 
+
     const CLOUD_NAME: string = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME!
     const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_CLOUD_UPLOAD_PRESET!
     
@@ -134,6 +136,16 @@ export const uploadImage = async ({ file, walletAddress, bio, username } : {
         return docs
     }
 
+    if(!file){
+        const doc = await getAllDocs();
+        await updateDoc(doc.docs[0].ref, {
+            bio,
+            username
+        });
+        successToast('Profile updated successfully')
+        return true
+    }
+
     const [imgURL, docs] = await Promise.all([uploadPicture(), getAllDocs()])
     
     const docSnap = docs.docs[0];
@@ -147,4 +159,36 @@ export const uploadImage = async ({ file, walletAddress, bio, username } : {
 
     successToast('Profile updated successfully')
     return true;
+}
+
+interface TrasactnDb {
+    sender: string,
+    receiver: string,
+    amount: string,
+}
+export const AddInitialTransaction = async ({ sender, receiver, amount } : TrasactnDb) => {
+    
+    await addDoc(collection(db, "transactions"), {
+        sender,
+        receiver,
+        amount,
+        time: new Date().getTime(),
+        status: 'incoming'
+    });
+
+}
+
+export const AddFinalTransaction = async ({ sender, receiver, amount } : TrasactnDb) => {
+    const documents = await getDocs(transactionRef);
+
+    console.log(sender, receiver, amount, documents)
+
+    // await addDoc(collection(db, "transactions"), {
+    //     sender,
+    //     receiver,
+    //     amount,
+    //     time: new Date().getTime(),
+    //     status: 'successful'
+    // });
+
 }
