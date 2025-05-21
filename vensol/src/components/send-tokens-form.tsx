@@ -81,6 +81,7 @@ export const SendTokensForm = () => {
       "confirmed");
       const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
       successToast(`${values.token} sent 🚀🚀`)
+      wallet.refresh()
       console.log(explorerUrl)
       } catch (error) {
 

@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Wallet, Send, QrCode, Clock, RefreshCw, Users, Copy } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Button } from "./ui/button"
@@ -13,13 +13,14 @@ import { formatAddress } from "../lib/utils"
 import { successToast } from "./my-custom-toast"
 import { WalletComponent } from "./wallet"
 import { useWalletDetailsProvider } from "../context/wallet-info"
-import { LAMPORTS_PER_SOL } from "@solana/web3.js"
+import { createAccount } from "../lib/firebase-helpers"
+import { useAuthProvider } from "../context/auth-provider"
 
 export const Dashboard = () => {
   
   
   const [activeTab, setActiveTab] = useState("send")
-  
+  const auth = useAuthProvider();
   const wallet = useWalletDetailsProvider();
 
   const refreshBalance = () => {
@@ -27,6 +28,18 @@ export const Dashboard = () => {
     successToast('Balance updated 🚀🚀') 
   }
 
+  useEffect(()=>{
+
+    if(wallet.walletAddress.trim()){
+      if(!auth?.authenticated){
+        return;
+      }
+      createAccount({
+        userWallet: wallet.walletAddress
+      })
+    }
+    
+  },[wallet.walletAddress])
   
  
   return (
@@ -70,7 +83,7 @@ export const Dashboard = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <p className="text-sm text-muted-foreground">SOL Balance</p>
-                    <p className="font-medium">{Number(wallet.walletBalance?.toFixed(4)) / LAMPORTS_PER_SOL} SOL</p>
+                    <p className="font-medium">{wallet.walletBalance?.toFixed(4)} SOL</p>
                   </div>
                   {/* {Object.entries(user.tokenBalances).map(([token, balance]) => (
                     <div key={token} className="flex justify-between">

@@ -8,7 +8,8 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
-import { CivicAuthProvider } from "./auth-provider";
+import NotificationProvider from "./notification-provider";
+import { CustomAuthProvider } from "./auth-provider";
 
 const Connection = ({ children }: {
     children: React.ReactNode
@@ -39,10 +40,11 @@ export const CivicProvider = ( { children } : {
   // const API_KEY = import.meta.env.VITE_CIVIC_KEY
   return(
     <Connection>
-      <CivicAuthProvider>
-
-        {children}
-      </CivicAuthProvider>
+      <CustomAuthProvider>
+        <NotificationProvider>
+          {children}
+        </NotificationProvider>
+      </CustomAuthProvider>
       
     </Connection>
   )

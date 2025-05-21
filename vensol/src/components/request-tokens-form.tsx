@@ -2,18 +2,15 @@ import {  useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { QRCodeCanvas } from 'qrcode.react'
-import { Copy, Download, Share } from "lucide-react"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
-import { useAuthProvider } from "../context/auth-provider"
 import { Input } from "./ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Textarea } from "./ui/textarea"
 import { Button } from "./ui/button"
-import { Card, CardContent } from "./ui/card"
-import { UseWallet } from "../lib/use-wallet"
 import { errorToast, successToast } from "./my-custom-toast"
-import { handleDownloadImage } from "../lib/handle-download-qrCode"
+import { useAuthProvider } from "../context/auth-provider"
+import { useWalletDetailsProvider } from "../context/wallet-info"
+import QRCode from "./qr-code"
 
 const formSchema = z.object({
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
@@ -26,11 +23,11 @@ const formSchema = z.object({
 
 
 export const RequestTokensForm = () => {
-  const userAuth = useAuthProvider();
-  const { getWalletAddress } = UseWallet();
+  
+  const auth = useAuthProvider();
+  const { walletAddress } = useWalletDetailsProvider();
 
   const [qrData, setQrData] = useState<string | null>(null)
-  const [isCanvaHovered, setIsCanvaHovered] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,12 +43,12 @@ export const RequestTokensForm = () => {
     token: string,
     note?: string
   }) => {
-        
-    if(!userAuth?.authenticated) {
+ 
+    if(!auth?.authenticated) {
       errorToast('You need to be logged in to send tokens');
       return;
     }
-    const walletAddress = getWalletAddress();
+
     if(!walletAddress) {
       errorToast('You need to be logged in to send tokens');
       return;
@@ -73,28 +70,7 @@ export const RequestTokensForm = () => {
     setQrData(url)
     successToast('QR code generated')
   }
-  
 
-  const copyToClipboard = () => {
-    if (qrData) {
-      navigator.clipboard.writeText(qrData)
-      successToast("Payment request data copied to clipboard")
-    }
-  }
-
-  const ShareQRCode = async () => {
-    if(qrData) {
-
-        await navigator.share({
-          text: qrData,
-          title: 'Request for token'
-        })
-      }
-    }
-  
-    const handleDownloadImages = () => {
-      handleDownloadImage('#generate-qrCode');
-    }
 
   return (
     <div className="space-y-6">
@@ -159,60 +135,7 @@ export const RequestTokensForm = () => {
       </Form>
 
       {qrData && (
-        <Card>
-          <CardContent className="pt-6 flex flex-col items-center">
-            <div className="bg-white p-4 rounded-lg relative">
-              <QRCodeCanvas 
-                id="generate-qrCode" 
-                value={qrData} 
-                className={`max-h-[200px] max-w-[200px] cursor-pointer size-[100%] ${isCanvaHovered && 'blur-sm'}`} 
-                draggable={false} 
-                size={200} 
-                onMouseEnter={()=>{setIsCanvaHovered(true)}}
-                onMouseLeave={()=>{setIsCanvaHovered(false)}}
-              />
-              {
-                isCanvaHovered && 
-                <Download 
-                  className="cursor-pointer absolute top-2.5 right-2.5" 
-                  onMouseEnter={()=>{setIsCanvaHovered(true)}}
-                  onMouseLeave={()=>{setIsCanvaHovered(false)}}
-                  onClick={handleDownloadImages}
-                />
-              }
-            </div>
-            <p className="mt-4 text-sm text-center text-muted-foreground">Scan this QR code to send payment</p>
-            <div className="text-center gap-2 grid-cols-1 grid sm:grid-cols-3 md:grid-cols-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2 cursor-pointer" 
-                onClick={copyToClipboard}
-              >
-                <Copy className="mr-2 h-4 w-4" />
-                Copy Payment Data
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2 cursor-pointer" 
-                onClick={ShareQRCode}
-              >
-                <Share className="mr-2 h-4 w-4" />
-                Share
-              </Button>
-              <Button
-                size={'sm'}
-                className="cursor-pointer mt-2 md:hidden"
-                variant={"outline"}
-                onClick={handleDownloadImages}
-              >
-                <Download className="mr-2 h-4 w-4"/>
-                Download
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <QRCode qrData={qrData}/>
       )}
     </div>
   )

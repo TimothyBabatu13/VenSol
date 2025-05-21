@@ -5,16 +5,20 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 export interface ProviderType {
     authenticated: boolean,
+    isLoadingInBackground: boolean
 }
 const Provider = createContext<ProviderType>({
-    authenticated: false
+    authenticated: false,
+    isLoadingInBackground: true
 })
 
-export function CivicAuthProvider({ children }: { children: ReactNode }) {
+export function CustomAuthProvider({ children }: { children: ReactNode }) {
     
     const [auth, setAuth] = useState<ProviderType>({
         authenticated: false,
+        isLoadingInBackground: true
     });
+
     const { connected, connecting, disconnecting } = useWallet()
 
     useEffect(()=>{
@@ -23,8 +27,26 @@ export function CivicAuthProvider({ children }: { children: ReactNode }) {
             ...prev,
             authenticated: connected
         }))
-
     }, [connected, connecting, disconnecting])
+
+    const delayResponse = () => {
+        return new Promise(resolve => {
+            setTimeout(()=>{
+                resolve('')
+            }, 200)
+        })
+    }
+    
+    useEffect(()=>{
+        delayResponse()
+            .then(()=>{
+                setAuth(prev => ({
+                    ...prev,
+                    isLoadingInBackground: false
+                }))
+        })
+    }, [connected, connecting, disconnecting])
+
   return (
     <Provider.Provider value={auth}>
         {children}

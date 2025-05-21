@@ -1,96 +1,14 @@
-"use client"
-
-import { useEffect, useState } from "react"
 
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
 import { formatAddress, formatDate } from "../lib/utils"
+import { useTransactionProvider } from "../context/notification-provider"
 
-// Mock transaction data - in a real app, this would come from your backend
-const MOCK_TRANSACTIONS : Array<Transaction> = [
-  {
-    id: "tx1",
-    type: "send",
-    amount: 0.5,
-    token: "SOL",
-    recipient: "8xDrJGHdx4GxKBG9XuPUTpXZXnRFJEpLLhrMr5Lc1cHx",
-    sender: "5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht",
-    timestamp: new Date().getTime() - 1000 * 60 * 5, // 5 minutes ago
-    note: "Lunch payment",
-    status: "confirmed",
-  },
-  {
-    id: "tx2",
-    type: "receive",
-    amount: 1.2,
-    token: "SOL",
-    recipient: "5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht",
-    sender: "8xDrJGHdx4GxKBG9XuPUTpXZXnRFJEpLLhrMr5Lc1cHx",
-    timestamp: new Date().getTime() - 1000 * 60 * 60, // 1 hour ago
-    note: "For the concert tickets",
-    status: "confirmed",
-  },
-  {
-    id: "tx3",
-    type: "send",
-    amount: 0.1,
-    token: "SOL",
-    recipient: "7YarYNAzJbGTrF2fSrBpCQvCUHZrYrGoLcGZEXWSxn8P",
-    sender: "5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht",
-    timestamp: new Date().getTime() - 1000 * 60 * 60 * 24, // 1 day ago
-    note: "Coffee",
-    status: "confirmed",
-  },
-]
 
-interface Transaction {
-  id: string
-  type: "send" | "receive"
-  amount: number
-  token: string
-  recipient: string
-  sender: string
-  timestamp: number
-  note?: string
-  status: "pending" | "confirmed" | "failed"
-}
+export const TransactionFeed = () => {
 
-export function TransactionFeed() {
+  const data = useTransactionProvider();
 
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-
-    const fetchTransactions = async () => {
-      //get users wallet address and username
-      //check db to see to see if wallet address or username is sender or sender or receiver
-      //write logic to check if current logged in user is the sender or reciver
-      try {
-        
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        const user = {
-          walletAddress: '5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht'
-        };
-
-        
-        const userTransactions = MOCK_TRANSACTIONS.filter((tx) => {
-          if (!user?.walletAddress) return false
-          return tx.sender === user.walletAddress || tx.recipient === user.walletAddress
-        })
-
-        setTransactions([...userTransactions])
-      } catch (error) {
-        console.error("Error fetching transactions:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchTransactions()
-    
-  }, [])
-
-  if (isLoading) {
+  if (data?.isLoading) {
     return (
       <div className="flex justify-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
@@ -98,7 +16,7 @@ export function TransactionFeed() {
     )
   }
 
-  if (transactions.length === 0) {
+  if (data?.transcations.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">No transactions found</p>
@@ -108,7 +26,7 @@ export function TransactionFeed() {
 
   return (
     <div className="space-y-4">
-      {transactions.map((tx) => (
+      {data?.transcations.map((tx) => (
         <div key={tx.id} className="flex items-start gap-4 p-4 rounded-lg border">
           <div className={`rounded-full p-2 ${tx.type === "receive" ? "bg-green-100" : "bg-red-100"}`}>
             {tx.type === "receive" ? (

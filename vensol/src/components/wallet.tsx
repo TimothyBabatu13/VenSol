@@ -5,12 +5,20 @@ import { formatAddress } from "../lib/utils";
 import { Copy, RefreshCw } from "lucide-react";
 import { successToast } from "./my-custom-toast";
 import { Button } from "./ui/button";
+import { useWalletDetailsProvider } from "../context/wallet-info";
 
 export const WalletComponent = ({ walletAddress, walletBalance } : {
-    // user: Web3UserContextType,
     walletAddress: string,
     walletBalance: number
 }) => {
+
+    const wallet = useWalletDetailsProvider();
+
+    const handleRefresh = () => {
+        wallet.refresh();
+        successToast('Wallet refreshed 🚀')
+    }
+
     return(
         <Card>
             <CardHeader className="pb-3">
@@ -60,7 +68,11 @@ export const WalletComponent = ({ walletAddress, walletBalance } : {
                 </div>
                 </CardContent>
                 <CardFooter>
-                    <Button variant="outline" className="w-full cursor-pointer">
+                    <Button 
+                        variant="outline" 
+                        className="w-full cursor-pointer"
+                        onClick={handleRefresh}
+                    >
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Refresh Balances
                     </Button>
