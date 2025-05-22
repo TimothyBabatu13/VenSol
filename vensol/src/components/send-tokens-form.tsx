@@ -78,6 +78,10 @@ export const SendTokensForm = () => {
         sender: fromPubkey.toString(),
       });
 
+      /* 
+        optimize this to be very fast. It's fucking slow.
+      */
+
       const signature = await sendTransaction(transaction, connection);
       const latestBlockhash = await connection.getLatestBlockhash();
       await connection.confirmTransaction({

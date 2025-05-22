@@ -10,6 +10,7 @@ import {
 } from "@solana/wallet-adapter-wallets";
 import NotificationProvider from "./notification-provider";
 import { CustomAuthProvider } from "./auth-provider";
+import '@solana/wallet-adapter-react-ui/styles.css';
 
 const Connection = ({ children }: {
     children: React.ReactNode

@@ -192,3 +192,7 @@ export const AddFinalTransaction = async ({ sender, receiver, amount } : Trasact
     // });
 
 }
+
+export const getTransactions = () => {
+    
+}

@@ -9,6 +9,7 @@ import { Card, CardContent } from "../components/ui/card";
 import type { WalletName } from "@solana/wallet-adapter-base";
 import { useTransactionProvider } from "../context/notification-provider";
 import { UserProfile } from "./component/user";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 const Footer = () => {
     const date = new Date();
@@ -61,6 +62,7 @@ export function DrawerDemo({ children } : {
 }) {
 
   const { select, connect, wallets } = useWallet()
+  
 
   const handleConnect = (name: string) => {
     select(name as WalletName)
@@ -169,11 +171,18 @@ const Header = () => {
               ?
               ( userAuth?.authenticated 
                 ? 
-              <LoggedInHeader 
-              /> 
-              : 
+              <>
+              
+              <LoggedInHeader />
+              <WalletMultiButton style={{background: 'blue'}} /> 
+  </>             
+ :
+              <>
               <NotUntheticatedHeader 
               />
+              <WalletMultiButton />
+              </> 
+              
             ) : 
             (
             <div>Loading apparently</div>
