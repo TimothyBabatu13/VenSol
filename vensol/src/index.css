@@ -128,3 +128,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+header .loogedin .wallet-adapter-button {
+  height: fit-content;
+  width: fit-content;
+  padding: 0;
+  background: none;
+  color: black;
+}
+
+header .loogedin .wallet-adapter-button:hover{
+  background: none;
+}
+
+header .loogedin .wallet-adapter-button img, header .loogedin .wallet-adapter-button i  {
+  display: none;
+}

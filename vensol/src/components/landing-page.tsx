@@ -1,7 +1,6 @@
 
 import { ArrowRight, Send, Clock } from "lucide-react"
-import { Button } from "./ui/button"
-import { DrawerDemo } from "../layout/Header";
+import { WalletModalButton } from "@solana/wallet-adapter-react-ui";
 
 interface CardProp {
   icon: React.ReactNode,
@@ -63,14 +62,19 @@ export const LandingPage = () => {
                   blockchain.
                 </p>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <DrawerDemo>
-                    <Button 
-                      size="lg"
-                      className="cursor-pointer"
-                    >
-                      Get Started <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DrawerDemo>
+                  <WalletModalButton
+                    style={{
+                      textAlign: 'center',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderRadius: '10px',
+                      background: 'black',
+                      color: 'oklch(0.985 0 0)'
+                    }} 
+                    endIcon={<ArrowRight className="ml-2 h-4 w-4" />}
+                    children={'Get Started'}
+                  />
                 </div>
               </div>
               <div className="mx-auto lg:ml-auto">

@@ -3,13 +3,9 @@ import { Button } from "../components/ui/button"
 import { useAuthProvider } from "../context/auth-provider";
 import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../components/ui/drawer";
-import { Card, CardContent } from "../components/ui/card";
-import type { WalletName } from "@solana/wallet-adapter-base";
 import { useTransactionProvider } from "../context/notification-provider";
 import { UserProfile } from "./component/user";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 const Footer = () => {
     const date = new Date();
@@ -28,10 +24,7 @@ const Footer = () => {
 const LoggedInHeader = () => {
 
   const notification = useTransactionProvider();
-  const { disconnect } = useWallet();
-  const handleLogout = () => {
-    disconnect()
-  }
+
     return (
     <div className="flex items-center gap-4 ml-auto">
         <Button className="cursor-pointer relative" variant="ghost" size="icon">
@@ -40,103 +33,15 @@ const LoggedInHeader = () => {
              notification?.numberOfNotifications && <span className="absolute top-0 right-1.5">{notification?.numberOfNotifications}</span>
             }
         </Button>
-        <Button 
-          className="cursor-pointer" 
-          variant="ghost" 
-          size="icon"
-          onClick={handleLogout}
-        >
-            <LogOut  />
-        </Button>
        <UserProfile />
        
+       <WalletDisconnectButton 
+        children={<LogOut height={16} width={16}/>}
+      />
     </div>
         
     )
 }
-
-
-
-export function DrawerDemo({ children } : {
-  children: React.ReactNode
-}) {
-
-  const { select, connect, wallets } = useWallet()
-  
-
-  const handleConnect = (name: string) => {
-    select(name as WalletName)
-    connect()
-  }
-
-
-  return (
-    <Drawer>
-      <DrawerTrigger asChild>
-        {children}
-      </DrawerTrigger>
-      <DrawerContent className="text-center ">
-        <div className="mx-auto w-full max-w-sm ">
-          <DrawerHeader>
-            <DrawerTitle>
-              <p className="text-3xl font-bold tracking-tight">Connect Wallet</p>
-            </DrawerTitle>
-            <DrawerDescription className="text-muted-foreground">
-              Select a wallet from the list below to connect
-            </DrawerDescription>
-          </DrawerHeader>
-          
-          <DrawerFooter className="grid grid-cols-2">
-            {
-              wallets.map((wallet) =>(
-                <Card key={wallet.adapter.name} className="border border-slate-200">
-                  <CardContent className="p-0">
-                    {/* flex items-center justify-between */}
-                    <div className=" p-4">
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center`}>
-                          <img src={wallet.adapter.icon} alt={wallet.adapter.icon} className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">{wallet.adapter.name}</h3>
-                        </div>
-                      </div>
-                      <Button
-                        size="sm"
-                        className="rounded-full cursor-pointer"
-                        onClick={() => handleConnect(wallet.adapter.name)}
-                      >
-                        Connect
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ) )
-            }
-            <DrawerClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </div>
-      </DrawerContent>
-    </Drawer>
-  )
-}
-
-const NotUntheticatedHeader = () => {
-
-    return (
-      <>
-      <DrawerDemo> 
-        <Button
-            className="cursor-pointer">
-            Sign In
-          </Button>
-      </DrawerDemo>
-      </>
-    )
-}
-
 
 const Header = () => {
 
@@ -171,16 +76,23 @@ const Header = () => {
               ?
               ( userAuth?.authenticated 
                 ? 
-              <>
               
+              <div className="loogedin">
               <LoggedInHeader />
-              <WalletMultiButton style={{background: 'blue'}} /> 
-  </>             
+              {/* <WalletMultiButton style={{background: 'blue'}} />  */}
+              </div>             
  :
               <>
-              <NotUntheticatedHeader 
-              />
-              <WalletMultiButton />
+                <WalletMultiButton 
+                  children={
+                  <h1>Sign In</h1>
+                  }
+                  style={{
+                    background: 'black',
+                    borderRadius: '10px',
+                    fontSize: '0.875rem',
+                  }}
+                />
               </> 
               
             ) : 
