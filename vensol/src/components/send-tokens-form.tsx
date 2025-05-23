@@ -29,8 +29,13 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-export const SendTokensForm = () => {
 
+/*
+Get all users using the hook i created, after that, you can always check if username correlates with what the user inputted.
+Shalom #️🚀🚀🚀🚀🚀🚀 
+*/
+
+export const SendTokensForm = () => {
 
   const userAuth = useAuthProvider();
   const wallet = useWalletDetailsProvider()
@@ -57,58 +62,103 @@ export const SendTokensForm = () => {
     }
     // 32PnHdJiXaLZjcx3RtJin8TJYysbwGvvDcHLYDeSVmbf
 
-    const sendSol = async () => {
+    const SendSol =  async ()=>{
       setIsSubmitting(true)
       try {
-        const toPubkey = new PublicKey(values.recipient);
-      const lamports = Number(values.amount) * LAMPORTS_PER_SOL as number;
-      const fromPubkey = new PublicKey(wallet.walletAddress)
+        const lamports = +values.amount * LAMPORTS_PER_SOL;
+        const fromPubkey = new PublicKey(wallet.walletAddress);
+        const toPubkey = new PublicKey(values.recipient)
+        
+        const transaction = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports,
+          }));
+          
+          AddInitialTransaction({
+            amount: lamports.toString(),
+            receiver: toPubkey.toString(),
+            sender: fromPubkey.toString(),
+          });
+        
+          const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
 
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports,
-        })
-      );
-
-      await AddInitialTransaction({
-        amount: lamports.toString(),
-        receiver: toPubkey.toString(),
-        sender: fromPubkey.toString(),
-      });
-
-      /* 
-        optimize this to be very fast. It's fucking slow.
-      */
-
-      const signature = await sendTransaction(transaction, connection);
-      const latestBlockhash = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({
-        signature,
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      },
-      "confirmed");
-      await AddFinalTransaction({
-        amount: lamports.toString(),
-        receiver: toPubkey.toString(),
-        sender: fromPubkey.toString(),
-      });
-      const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
-      successToast(`${values.token} sent 🚀🚀`)
-      wallet.refresh()
-      console.log(explorerUrl)
+          const signature = await sendTransaction(transaction, connection, { minContextSlot });
+          await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
+          const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+          successToast(`${values.token} sent 🚀🚀`)
+          wallet.refresh()
+          console.log(explorerUrl)
+          await AddFinalTransaction({
+            amount: lamports.toString(),
+            receiver: toPubkey.toString(),
+            sender: fromPubkey.toString(),
+          });
+          
       } catch (error) {
-
+        errorToast(error as string)
       }
       finally{
         setIsSubmitting(false)
       }
 
     }
+
+
+    SendSol()
+    // const sendSol = async () => {
+    //   setIsSubmitting(true)
+    //   try {
+    //     const toPubkey = new PublicKey(values.recipient);
+    //   const lamports = Number(values.amount) * LAMPORTS_PER_SOL as number;
+    //   const fromPubkey = new PublicKey(wallet.walletAddress)
+
+    //   const transaction = new Transaction().add(
+    //     SystemProgram.transfer({
+    //       fromPubkey,
+    //       toPubkey,
+    //       lamports,
+    //     })
+    //   );
+
+    //   await AddInitialTransaction({
+    //     amount: lamports.toString(),
+    //     receiver: toPubkey.toString(),
+    //     sender: fromPubkey.toString(),
+    //   });
+
+    //   /* 
+    //     optimize this to be very fast. It's fucking slow.
+    //   */
+
+    //   const signature = await sendTransaction(transaction, connection);
+    //   const latestBlockhash = await connection.getLatestBlockhash();
+    //   await connection.confirmTransaction({
+    //     signature,
+    //     blockhash: latestBlockhash.blockhash,
+    //     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    //   },
+    //   "confirmed");
+    //   await AddFinalTransaction({
+    //     amount: lamports.toString(),
+    //     receiver: toPubkey.toString(),
+    //     sender: fromPubkey.toString(),
+    //   });
+    //   const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+    //   successToast(`${values.token} sent 🚀🚀`)
+    //   wallet.refresh()
+    //   console.log(explorerUrl)
+    //   } catch (error) {
+
+    //   }
+    //   finally{
+    //     setIsSubmitting(false)
+    //   }
+
+    // }
     
-    sendSol()
+    // sendSol()
 
     // setIsSubmitting(true)
 

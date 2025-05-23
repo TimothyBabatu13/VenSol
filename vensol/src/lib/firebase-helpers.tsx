@@ -181,7 +181,8 @@ export const AddInitialTransaction = async ({ sender, receiver, amount } : Trasa
 export const AddFinalTransaction = async ({ sender, receiver, amount } : TrasactnDb) => {
     const documents = await getDocs(transactionRef);
 
-    console.log(sender, receiver, amount, documents)
+    console.log(sender, receiver, amount, documents);
+    console.log(documents)
 
     // await addDoc(collection(db, "transactions"), {
     //     sender,
@@ -195,4 +196,20 @@ export const AddFinalTransaction = async ({ sender, receiver, amount } : Trasact
 
 export const getTransactions = () => {
     
+}
+
+export const getAllUsers = async ({
+callBack
+}: {
+    callBack: (e: Array<userType>) => void
+}) => {
+    
+    const unsubscribe = onSnapshot(usersRef, (querySnapshot) => {
+        const cities: Array<userType> = [];
+        querySnapshot.forEach((doc) => {
+            const rr = doc.data() as userType
+            cities.push(rr);
+            callBack(cities)
+        })})
+        unsubscribe;
 }

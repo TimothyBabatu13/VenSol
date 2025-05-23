@@ -11,6 +11,7 @@ import {
 import NotificationProvider from "./notification-provider";
 import { CustomAuthProvider } from "./auth-provider";
 import '@solana/wallet-adapter-react-ui/styles.css';
+import AllUsersProvider from "./all-users";
 
 const Connection = ({ children }: {
     children: React.ReactNode
@@ -43,7 +44,9 @@ export const CivicProvider = ( { children } : {
     <Connection>
       <CustomAuthProvider>
         <NotificationProvider>
-          {children}
+          <AllUsersProvider>
+            {children}
+          </AllUsersProvider>
         </NotificationProvider>
       </CustomAuthProvider>
       
