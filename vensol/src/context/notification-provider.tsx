@@ -52,7 +52,6 @@ const NotificationProvider = ({ children }: {
               TransactionNotifications({
               callBack: (e)=>{
 
-                console.log(e)
                 const moneyReceived = e.filter((trn) => trn.receiver === 'BX63NWWAFaiMDE7ccRTUzMivXYy2XZTHyDMi2mkGSLQs').map(trn => ({
                   title: `Transfer from ${trn.sender}`,
                   address: trn.sender,
@@ -62,8 +61,8 @@ const NotificationProvider = ({ children }: {
                 }))
                 setHeaderNotification(moneyReceived)
                 setNumberOfNotifications(moneyReceived.filter(item => !item.seen).length)
-                
-                const realNotification = e.filter(trn => (trn.sender === user.walletAddress) || (trn.receiver === user.walletAddress)).map(trn => ({
+
+                const realNotification = e.filter(trn => ((trn.sender === user.walletAddress) || (trn.receiver === user.walletAddress))).map(trn => ({
                   type: trn.sender === user.walletAddress ? 'send' : 'receive',
                   amount: trn.amount,
                   token: "SOL",
@@ -92,7 +91,7 @@ const NotificationProvider = ({ children }: {
     
         fetchTransactions()
         
-      }, [])
+      }, [user.walletAddress])
 
   return (
     <context.Provider
