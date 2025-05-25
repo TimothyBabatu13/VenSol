@@ -16,6 +16,8 @@ export const createAccount = async ({ userWallet } : {
     userWallet: string,
 }) => {
     
+    if(!userWallet) return;
+console.log(userWallet)
     const q = query(usersRef, where("walletAddress", "==", userWallet));
     const querySnapshot = await getDocs(q);
 
@@ -169,8 +171,22 @@ interface TrasactnDb {
     note?: string,
 }
 export const AddInitialTransaction = async ({ sender, receiver, amount, uniqueId, note } : TrasactnDb) => {
-    console.log(uniqueId, 'from add initial transaction');
-    await addDoc(collection(db, "transactions"), {
+    const col = collection(db, "transactions");
+    
+    if(note){
+        await addDoc(col, {
+            sender,
+            receiver,
+            amount,
+            time: new Date().getTime(),
+            status: 'incoming',
+            uniqueId,
+            seen: false,
+            note
+        });
+    }
+
+    await addDoc(col, {
         sender,
         receiver,
         amount,
@@ -178,12 +194,13 @@ export const AddInitialTransaction = async ({ sender, receiver, amount, uniqueId
         status: 'incoming',
         uniqueId,
         seen: false,
-        note
     });
 
 }
 
-export const AddFinalTransaction = async ({ uniqueId } : TrasactnDb) => {
+export const AddFinalTransaction = async ({ uniqueId } : {
+    uniqueId: string
+}) => {
     console.log(uniqueId, 'form add final transaction')
     const q = query(transactionRef, where("uniqueId", "==", uniqueId));
     const documents = await getDocs(q);
@@ -192,6 +209,23 @@ export const AddFinalTransaction = async ({ uniqueId } : TrasactnDb) => {
         const docRef = doc(db, "transactions", docSnapshot.id);
         await updateDoc(docRef, {
             status: 'succesful'
+        });
+        console.log('updated succesfully')
+    });
+
+}
+
+export const AddTransactionFailed = async ({ uniqueId } : {
+    uniqueId: string
+}) => {
+    console.log(uniqueId, 'form transaction failed');
+    const q = query(transactionRef, where("uniqueId", "==", uniqueId));
+    const documents = await getDocs(q);
+    
+    documents.forEach(async (docSnapshot) => {
+        const docRef = doc(db, "transactions", docSnapshot.id);
+        await updateDoc(docRef, {
+            status: 'failed'
         });
         console.log('updated succesfully')
     });

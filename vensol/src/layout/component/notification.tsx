@@ -4,34 +4,26 @@ import { Button } from "../../components/ui/button"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "../../components/ui/sheet"
 import { useTransactionProvider } from "../../context/notification-provider"
 import { useState } from "react"
-
-const notifications = [
-  {
-    id: 1,
-    title: "Transfer from",
-    address: 'BX63NWWAFaiMDE7ccRTUzMivXYy2XZTHyDMi2mkGSLQs',
-    description: "You received 20SOL from BX63NWWAFaiMDE7ccRTUzMivXYy2XZTHyDMi2mkGSLQs",
-    time: "2 minutes ago",
-    unread: true,
-  },
-  
-]
+import { formatDate } from "../../lib/utils"
 
 const NotificationCard = () => {
 
-    const shortenLength = (address: string) => {
-        if(address.length < 10) return address
-        return `${address.slice(0, 4)}...${address.slice(-4)}`
-    }
+    const data = useTransactionProvider();
+    // const shortenLength = (address: string) => {
+    //     if(address.length < 10) return address
+    //     return `${address.slice(0, 4)}...${address.slice(-4)}`
+    // }
+
+    if(data?.headerNotification.length === 0) return <div>No notification</div>
 
     return(
         <div className="divide-y flex flex-col gap-2">
-                  {notifications.map((notification) => {
+                  {data?.headerNotification.map((notification) => {
                     return (
                       <div
-                        key={notification.id}
+                        key={crypto.randomUUID()}
                         className={`p-4 hover:bg-gray-50 transition-colors ${
-                          notification.unread ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                          notification.seen ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
                         }`}
                       >
                         <div className="flex items-start gap-3">
@@ -40,16 +32,16 @@ const NotificationCard = () => {
                               <div className="flex-1">
                                 <h3
                                   className={`text-sm font-medium ${
-                                    notification.unread ? "text-gray-900" : "text-gray-700"
+                                    notification.seen ? "text-gray-900" : "text-gray-700"
                                   }`}
                                 >
-                                  {`${notification.title} ${shortenLength(notification.address)}`}
-                                  {notification.unread && (
+                                  {`${notification.title}`}
+                                  {notification.seen && (
                                     <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full inline-block"></span>
                                   )}
                                 </h3>
                                 <p className="text-sm text-gray-600 mt-1">{notification.description}</p>
-                                <p className="text-xs text-gray-500 mt-2">{notification.time}</p>
+                                <p className="text-xs text-gray-500 mt-2">{formatDate(notification.time)}</p>
                               </div>
                             </div>
                           </div>

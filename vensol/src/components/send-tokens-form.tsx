@@ -15,7 +15,7 @@ import { useAuthProvider } from "../context/auth-provider"
 import { errorToast, successToast } from "./my-custom-toast"
 import { useWalletDetailsProvider } from "../context/wallet-info"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
-import { AddFinalTransaction, AddInitialTransaction } from "../lib/firebase-helpers"
+import { AddFinalTransaction, AddInitialTransaction, AddTransactionFailed } from "../lib/firebase-helpers"
 
 const formSchema = z.object({
   recipient: z.string().min(1, "Recipient is required"),
@@ -81,7 +81,8 @@ export const SendTokensForm = () => {
             amount: lamports.toString(),
             receiver: toPubkey.toString(),
             sender: fromPubkey.toString(),
-            uniqueId
+            uniqueId,
+            note: values.note
           });
         
           const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
@@ -92,15 +93,13 @@ export const SendTokensForm = () => {
           successToast(`${values.token} sent 🚀🚀`)
           wallet.refresh()
           console.log(explorerUrl)
-          await AddFinalTransaction({
-            amount: lamports.toString(),
-            receiver: toPubkey.toString(),
-            sender: fromPubkey.toString(),
-            uniqueId
-          });
+
+          await AddFinalTransaction({uniqueId});
           
       } catch (error) {
-        errorToast(error as string)
+        const err = error as Error
+        errorToast(err.message)
+        await AddTransactionFailed({uniqueId})
       }
       finally{
         setIsSubmitting(false)

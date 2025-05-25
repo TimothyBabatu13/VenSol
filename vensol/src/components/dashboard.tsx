@@ -34,9 +34,12 @@ export const Dashboard = () => {
       if(!auth?.authenticated){
         return;
       }
-      createAccount({
-        userWallet: wallet.walletAddress
-      })
+
+      if(wallet.walletAddress) {
+        createAccount({
+          userWallet: wallet.walletAddress
+        })
+      }
     }
     
   },[wallet.walletAddress])
