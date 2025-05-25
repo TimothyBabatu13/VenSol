@@ -78,7 +78,7 @@ const NotificationProvider = ({ children }: {
                   note: trn.note,
                   status: trn.status,
                   seen: trn.seen
-                }))
+                })).sort((a, b) => b.timestamp - a.timestamp)
 
                 setTransactionNotification(realNotification)
               }
