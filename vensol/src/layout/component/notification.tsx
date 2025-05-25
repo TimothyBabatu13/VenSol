@@ -9,10 +9,6 @@ import { formatDate } from "../../lib/utils"
 const NotificationCard = () => {
 
     const data = useTransactionProvider();
-    // const shortenLength = (address: string) => {
-    //     if(address.length < 10) return address
-    //     return `${address.slice(0, 4)}...${address.slice(-4)}`
-    // }
 
     if(data?.headerNotification.length === 0) return <div>No notification</div>
 

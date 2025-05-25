@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { TransactionNotifications, } from "../lib/firebase-helpers"
 import { useWalletDetailsProvider } from "./wallet-info"
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 interface HeaderNotificationType {
   title: string;
@@ -42,6 +43,11 @@ const NotificationProvider = ({ children }: {
     const [headerNotification, setHeaderNotification] = useState<HeaderNotificationType[]>([])
     const [transactionNotification, setTransactionNotification] = useState<RealTransactionType[]>([]);
 
+     const shortenLength = (address: string) => {
+        if(address.length < 10) return address
+        return `${address.slice(0, 4)}...${address.slice(-4)}`
+    }
+
     useEffect(() => {
     
         const fetchTransactions = async () => {
@@ -53,9 +59,9 @@ const NotificationProvider = ({ children }: {
               callBack: (e)=>{
 
                 const moneyReceived = e.filter((trn) => trn.receiver === 'BX63NWWAFaiMDE7ccRTUzMivXYy2XZTHyDMi2mkGSLQs').map(trn => ({
-                  title: `Transfer from ${trn.sender}`,
+                  title: `Transfer from ${shortenLength(trn.sender)}`,
                   address: trn.sender,
-                  description: `You received ${trn.amount}SOL from ${trn.sender}`,
+                  description: `You received ${+trn.amount/LAMPORTS_PER_SOL}SOL from ${trn.sender}`,
                   time: trn.time,
                   seen: trn.seen
                 }))
