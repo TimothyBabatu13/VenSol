@@ -52,6 +52,7 @@ const NotificationProvider = ({ children }: {
               TransactionNotifications({
               callBack: (e)=>{
 
+                console.log(e)
                 const moneyReceived = e.filter((trn) => trn.receiver === 'BX63NWWAFaiMDE7ccRTUzMivXYy2XZTHyDMi2mkGSLQs').map(trn => ({
                   title: `Transfer from ${trn.sender}`,
                   address: trn.sender,
