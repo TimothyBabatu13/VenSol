@@ -1,4 +1,4 @@
-import { addDoc, collection, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 import { errorToast, successToast } from "../components/my-custom-toast";
 
@@ -165,32 +165,36 @@ interface TrasactnDb {
     sender: string,
     receiver: string,
     amount: string,
+    uniqueId: string,
+    note?: string,
 }
-export const AddInitialTransaction = async ({ sender, receiver, amount } : TrasactnDb) => {
-    
+export const AddInitialTransaction = async ({ sender, receiver, amount, uniqueId, note } : TrasactnDb) => {
+    console.log(uniqueId, 'from add initial transaction');
     await addDoc(collection(db, "transactions"), {
         sender,
         receiver,
         amount,
         time: new Date().getTime(),
-        status: 'incoming'
+        status: 'incoming',
+        uniqueId,
+        seen: false,
+        note
     });
 
 }
 
-export const AddFinalTransaction = async ({ sender, receiver, amount } : TrasactnDb) => {
-    const documents = await getDocs(transactionRef);
-
-    console.log(sender, receiver, amount, documents);
-    console.log(documents)
-
-    // await addDoc(collection(db, "transactions"), {
-    //     sender,
-    //     receiver,
-    //     amount,
-    //     time: new Date().getTime(),
-    //     status: 'successful'
-    // });
+export const AddFinalTransaction = async ({ uniqueId } : TrasactnDb) => {
+    console.log(uniqueId, 'form add final transaction')
+    const q = query(transactionRef, where("uniqueId", "==", uniqueId));
+    const documents = await getDocs(q);
+    
+    documents.forEach(async (docSnapshot) => {
+        const docRef = doc(db, "transactions", docSnapshot.id);
+        await updateDoc(docRef, {
+            status: 'succesful'
+        });
+        console.log('updated succesfully')
+    });
 
 }
 
@@ -208,6 +212,30 @@ callBack
         const cities: Array<userType> = [];
         querySnapshot.forEach((doc) => {
             const rr = doc.data() as userType
+            cities.push(rr);
+            callBack(cities)
+        })})
+        unsubscribe;
+}
+
+export interface TransactnType {
+    amount: string,
+    receiver: string,
+    seen: boolean,
+    sender: string,
+    status: string,
+    time: number,
+    uniqueId: string,
+    note?: string
+}
+
+export const TransactionNotifications = ({ callBack }: {
+    callBack: (e: Array<TransactnType>) => void
+}) => {
+    const unsubscribe = onSnapshot(transactionRef, (querySnapshot) => {
+        const cities: Array<TransactnType> = [];
+        querySnapshot.forEach((doc) => {
+            const rr = doc.data() as TransactnType
             cities.push(rr);
             callBack(cities)
         })})

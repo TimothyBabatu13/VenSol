@@ -17,7 +17,6 @@ import { useWalletDetailsProvider } from "../context/wallet-info"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { AddFinalTransaction, AddInitialTransaction } from "../lib/firebase-helpers"
 
-
 const formSchema = z.object({
   recipient: z.string().min(1, "Recipient is required"),
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
@@ -43,7 +42,7 @@ export const SendTokensForm = () => {
   const { connection } = useConnection()
   // const { publicKey } = useWallet();
   const [isSubmitting, setIsSubmitting] = useState(false)
-
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,6 +60,8 @@ export const SendTokensForm = () => {
       return;
     }
     // 32PnHdJiXaLZjcx3RtJin8TJYysbwGvvDcHLYDeSVmbf
+
+    const uniqueId = crypto.randomUUID();
 
     const SendSol =  async ()=>{
       setIsSubmitting(true)
@@ -80,6 +81,7 @@ export const SendTokensForm = () => {
             amount: lamports.toString(),
             receiver: toPubkey.toString(),
             sender: fromPubkey.toString(),
+            uniqueId
           });
         
           const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
@@ -94,6 +96,7 @@ export const SendTokensForm = () => {
             amount: lamports.toString(),
             receiver: toPubkey.toString(),
             sender: fromPubkey.toString(),
+            uniqueId
           });
           
       } catch (error) {

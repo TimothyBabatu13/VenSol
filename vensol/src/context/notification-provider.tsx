@@ -1,109 +1,94 @@
 import { createContext, useContext, useEffect, useState } from "react"
+import { TransactionNotifications, } from "../lib/firebase-helpers"
+import { useWalletDetailsProvider } from "./wallet-info"
 
-interface Transaction {
-  id: string
-  type: "send" | "receive"
-  amount: number
-  token: string
-  recipient: string
-  sender: string
-  timestamp: number
-  note?: string
-  status: "pending" | "confirmed" | "failed",
-  seen: boolean
+interface HeaderNotificationType {
+  title: string;
+  address: string;
+  description: string;
+  time: number;
+  seen: boolean;
 }
 
-type TransactionType = {
-    transcations: Transaction[]
+interface RealTransactionType {
+  type: string;
+  amount: string;
+  token: string;
+  recipient: string;
+  sender: string;
+  timestamp: number;
+  note: string | undefined;
+  status: string;
+  seen: boolean;
 }
 
-interface Notification extends TransactionType {
-    isLoading: boolean,
-    numberOfNotifications: number
+interface Notification {
+  headerNotification: HeaderNotificationType[],
+  realNotification: RealTransactionType[],
+  isLoading: boolean,
+  numberOfNotifications: number
 }
 
 const context = createContext<Notification | null>(null);
 
-const initialData: Transaction[] = [
-{
-    id: "tx1",
-    type: "send",
-    amount: 0.5,
-    token: "SOL",
-    recipient: "8xDrJGHdx4GxKBG9XuPUTpXZXnRFJEpLLhrMr5Lc1cHx",
-    sender: "5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht",
-    timestamp: new Date().getTime() - 1000 * 60 * 5, // 5 minutes ago
-    note: "Lunch payment",
-    status: "confirmed",
-    seen: false
-  },
-  {
-    id: "tx2",
-    type: "receive",
-    amount: 1.2,
-    token: "SOL",
-    recipient: "5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht",
-    sender: "8xDrJGHdx4GxKBG9XuPUTpXZXnRFJEpLLhrMr5Lc1cHx",
-    timestamp: new Date().getTime() - 1000 * 60 * 60, // 1 hour ago
-    note: "For the concert tickets",
-    status: "confirmed",
-    seen: false
-  },
-  {
-    id: "tx3",
-    type: "send",
-    amount: 0.1,
-    token: "SOL",
-    recipient: "7YarYNAzJbGTrF2fSrBpCQvCUHZrYrGoLcGZEXWSxn8P",
-    sender: "5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht",
-    timestamp: new Date().getTime() - 1000 * 60 * 60 * 24, // 1 day ago
-    note: "Coffee",
-    status: "confirmed",
-    seen: true
-  },
-]
 
 const NotificationProvider = ({ children }: {
     children: React.ReactNode
 }) => {
-
-    const [transaction, setTransaction] = useState<Transaction[]>();
+  
+    const user = useWalletDetailsProvider();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [numberOfNotifications, setNumberOfNotifications] = useState<number>()
+    const [headerNotification, setHeaderNotification] = useState<HeaderNotificationType[]>([])
+    const [transactionNotification, setTransactionNotification] = useState<RealTransactionType[]>([]);
 
     useEffect(() => {
     
         const fetchTransactions = async () => {
             setIsLoading(true)
-          //get users wallet address and username
-          //check db to see to see if wallet address or username is sender or sender or receiver
-          //write logic to check if current logged in user is the sender or reciver
-          try {
-            
-            await new Promise((resolve) => setTimeout(resolve, 1000))
-            const user = {
-              walletAddress: '5KKsLVU6TcbVDK4BS6K1DGDxnh4Q9xjYJ8XaDCG5t8ht'
-            };
-    
-            
-            const userTransactions = initialData.filter((tx) => {
-              if (!user?.walletAddress) return false
-              return tx.sender === user.walletAddress || tx.recipient === user.walletAddress
+
+            try {
+              
+              TransactionNotifications({
+              callBack: (e)=>{
+
+                const moneyReceived = e.filter((trn) => trn.receiver === 'BX63NWWAFaiMDE7ccRTUzMivXYy2XZTHyDMi2mkGSLQs').map(trn => ({
+                  title: `Transfer from ${trn.sender}`,
+                  address: trn.sender,
+                  description: `You received ${trn.amount}SOL from ${trn.sender}`,
+                  time: trn.time,
+                  seen: trn.seen
+                }))
+                setHeaderNotification(moneyReceived)
+                setNumberOfNotifications(moneyReceived.filter(item => !item.seen).length)
+                
+                const realNotification = e.filter(trn => (trn.sender === user.walletAddress) || (trn.receiver === user.walletAddress)).map(trn => ({
+                  type: trn.sender === user.walletAddress ? 'send' : 'receive',
+                  amount: trn.amount,
+                  token: "SOL",
+                  recipient: trn.receiver,
+                  sender: trn.sender,
+                  timestamp: trn.time,
+                  note: trn.note,
+                  status: trn.status,
+                  seen: trn.seen
+                }))
+
+                setTransactionNotification(realNotification)
+              }
             })
-    
-            setTransaction([...userTransactions])
-          } catch (error) {
-            console.error("Error fetching transactions:", error)
-          } finally {
-            setIsLoading(false)
-          }
+
+            setIsLoading(false);
+              
+            } catch (error) {
+              console.log(error as string)
+            }
+            finally {
+              setIsLoading(false)
+            }
+          
         }
     
-        const getNumberOfNotifications = () => {
-            const number = initialData.filter(item => item.seen).length;
-            setNumberOfNotifications(number);
-        }
-        getNumberOfNotifications()
         fetchTransactions()
         
       }, [])
@@ -112,7 +97,8 @@ const NotificationProvider = ({ children }: {
     <context.Provider
         value={{
             isLoading,
-            transcations: transaction!,
+            headerNotification: headerNotification,
+            realNotification: transactionNotification,
             numberOfNotifications: numberOfNotifications!
         }}
     >

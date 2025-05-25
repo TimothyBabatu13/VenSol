@@ -1,4 +1,5 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import React, { createContext, useContext, useEffect, useState } from "react"
 
 interface contextType {
@@ -29,7 +30,7 @@ const WalletContext = ({ children } : {
     
     const getBalance = async () => {
         if (publicKey) {
-            const res = await connection.getBalance(publicKey)
+            const res = await connection.getBalance(publicKey) / LAMPORTS_PER_SOL
             return res
         }
     }

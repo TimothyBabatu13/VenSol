@@ -1,7 +1,9 @@
 
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, Copy } from "lucide-react"
 import { formatAddress, formatDate } from "../lib/utils"
 import { useTransactionProvider } from "../context/notification-provider"
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { successToast } from "./my-custom-toast";
 
 
 export const TransactionFeed = () => {
@@ -16,7 +18,7 @@ export const TransactionFeed = () => {
     )
   }
 
-  if (data?.transcations.length === 0) {
+  if (data?.realNotification.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-muted-foreground">No transactions found</p>
@@ -26,13 +28,13 @@ export const TransactionFeed = () => {
 
   return (
     <div className="space-y-4">
-      {data?.transcations.map((tx) => (
-        <div key={tx.id} className="flex items-start gap-4 p-4 rounded-lg border">
-          <div className={`rounded-full p-2 ${tx.type === "receive" ? "bg-green-100" : "bg-red-100"}`}>
+      {data?.realNotification.map((tx) => (
+        <div key={crypto.randomUUID()} className="flex items-start gap-4 p-4 rounded-lg border">
+          <div className={`rounded-full p-2 bg-[#f7f7f7]`}>
             {tx.type === "receive" ? (
-              <ArrowDownLeft className="h-5 w-5 text-green-600" />
+              <ArrowDownLeft className="h-5 w-5 text-black" />
             ) : (
-              <ArrowUpRight className="h-5 w-5 text-red-600" />
+              <ArrowUpRight className="h-5 w-5 text-black" />
             )}
           </div>
 
@@ -40,10 +42,18 @@ export const TransactionFeed = () => {
             <div className="flex justify-between items-start">
               <div>
                 <p className="font-medium">
-                  {tx.type === "receive" ? "Received" : "Sent"} {tx.amount} {tx.token}
+                  {tx.type === "receive" ? "Received" : "Sent"} {+tx.amount / LAMPORTS_PER_SOL} {tx.token}
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
                   {tx.type === "receive" ? `From: ${formatAddress(tx.sender)}` : `To: ${formatAddress(tx.recipient)}`}
+                  <Copy 
+                    size={12}
+                    className="cursor-pointer"
+                    onClick={()=>{
+                      navigator.clipboard.writeText(tx.type === 'receive' ? tx.sender : tx.recipient);
+                      successToast('Wallet copied.')
+                    }}
+                  />
                 </p>
                 {tx.note && <p className="text-sm mt-1">{tx.note}</p>}
               </div>
@@ -51,11 +61,11 @@ export const TransactionFeed = () => {
                 <p className="text-sm text-muted-foreground">{formatDate(tx.timestamp)}</p>
                 <p
                   className={`text-xs ${
-                    tx.status === "confirmed"
-                      ? "text-green-600"
+                    tx.status === "succesful"
+                      ? "text-green-600 font-semibold"
                       : tx.status === "pending"
-                        ? "text-yellow-600"
-                        : "text-red-600"
+                        ? "text-yellow-600 font-semibold"
+                        : "text-red-600 font-semibold"
                   }`}
                 >
                   {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}

@@ -1,11 +1,11 @@
-import { Bell, LogOut, Wallet as WalletIcon } from "lucide-react"
-import { Button } from "../components/ui/button"
+import { LogOut, Wallet as WalletIcon } from "lucide-react"
 import { useAuthProvider } from "../context/auth-provider";
 import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useTransactionProvider } from "../context/notification-provider";
 import { UserProfile } from "./component/user";
 import { WalletDisconnectButton, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { HoverCardDemo } from "../components/hover-text";
+import { Notification } from "./component/notification";
 
 const Footer = () => {
     const date = new Date();
@@ -23,21 +23,19 @@ const Footer = () => {
 
 const LoggedInHeader = () => {
 
-  const notification = useTransactionProvider();
-
     return (
     <div className="flex items-center gap-4 ml-auto">
-        <Button className="cursor-pointer relative" variant="ghost" size="icon">
-            <Bell />
-            {
-             notification?.numberOfNotifications && <span className="absolute top-0 right-1.5">{notification?.numberOfNotifications}</span>
-            }
-        </Button>
-       <UserProfile />
+      <Notification />
+
+      <HoverCardDemo text="Profile">
+        <UserProfile />
+      </HoverCardDemo>
        
-       <WalletDisconnectButton 
-        children={<LogOut height={16} width={16}/>}
-      />
+       <HoverCardDemo text="Logout">
+          <WalletDisconnectButton 
+            children={<LogOut height={16} width={16}/>}
+          />
+       </HoverCardDemo>
     </div>
         
     )
