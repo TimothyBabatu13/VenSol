@@ -1,6 +1,7 @@
 import { addDoc, collection, doc, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 import { errorToast, successToast } from "../components/my-custom-toast";
+import { uploadImageToCloudinary } from "./utils";
 
 export interface userType {
     username: string, 
@@ -17,7 +18,7 @@ export const createAccount = async ({ userWallet } : {
 }) => {
     
     if(!userWallet) return;
-console.log(userWallet)
+    console.log(userWallet)
     const q = query(usersRef, where("walletAddress", "==", userWallet));
     const querySnapshot = await getDocs(q);
 
@@ -78,17 +79,6 @@ export const getUserName = async ({ userName } : {
     console.log(querySnapshot, result)
 }
 
-export const updateProfile = ({
-    userName, profileURL
-} : {
-    userName?: string,
-    profileURL?: string
-}) => {
-
-    console.log(userName, profileURL)
-    
-}
-
 export const uploadImage = async ({ file, walletAddress, bio, username } : {
     file: File,
     walletAddress: string,
@@ -96,42 +86,7 @@ export const uploadImage = async ({ file, walletAddress, bio, username } : {
     username: string
 }) => {
 
-
-    const CLOUD_NAME: string = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME!
-    const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_CLOUD_UPLOAD_PRESET!
-    
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", UPLOAD_PRESET);
-
-    const documents = await getDocs(usersRef);
-    const data = documents.docs.map(doc => doc.data());
-
-    const check = () => {
-        const myUserName = data.filter(item => item.walletAddress === walletAddress && item.username === username);
-        if(myUserName.length) return true;
-        const notMyUserName = data.filter(item => item.username === username);
-        if(notMyUserName.length) {
-            errorToast('This username has already been taken.')
-            return false;
-        };
-        return true
-    }
-
-    const res = check();
-
-    if(!res) return;
-
     const q = query(usersRef, where("walletAddress", "==", walletAddress));
-    const uploadPicture = async () => {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{
-            method: "POST",
-            body: formData,
-        });
-        const data = await res.json();
-        const url = data.url
-        return url as string
-    }
 
     const getAllDocs = async () => {
         const docs = await getDocs(q);
@@ -148,10 +103,9 @@ export const uploadImage = async ({ file, walletAddress, bio, username } : {
         return true
     }
 
-    const [imgURL, docs] = await Promise.all([uploadPicture(), getAllDocs()])
+    const [imgURL, docs] = await Promise.all([uploadImageToCloudinary(file), getAllDocs()])
     
     const docSnap = docs.docs[0];
-
     
     await updateDoc(docSnap.ref, {
         profileURL: imgURL,

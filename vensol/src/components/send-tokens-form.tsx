@@ -16,6 +16,7 @@ import { errorToast, successToast } from "./my-custom-toast"
 import { useWalletDetailsProvider } from "../context/wallet-info"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { AddFinalTransaction, AddInitialTransaction, AddTransactionFailed } from "../lib/firebase-helpers"
+import { network } from "../lib/utils"
 
 const formSchema = z.object({
   recipient: z.string().min(1, "Recipient is required"),
@@ -28,14 +29,12 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-const network = 'devnet';
 export const SendTokensForm = () => {
 
   const userAuth = useAuthProvider();
   const wallet = useWalletDetailsProvider()
   const { sendTransaction } = useWallet()
   const { connection } = useConnection()
-  // const { publicKey } = useWallet();
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const form = useForm<FormValues>({

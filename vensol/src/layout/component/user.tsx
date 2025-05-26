@@ -9,6 +9,8 @@ import { Input } from "../../components/ui/input"
 import { Textarea } from "../../components/ui/textarea"
 import { getUserDetails, uploadImage, type userType } from "../../lib/firebase-helpers"
 import { useWalletDetailsProvider } from "../../context/wallet-info"
+import { useAllUsersProvider } from "../../context/all-users"
+import { errorToast } from "../../components/my-custom-toast"
 
 interface user extends userType {
     previewURL: string,
@@ -32,6 +34,8 @@ const ProfilePanel = ({isOpen, onClose, userDetails}: {
         image: undefined
     })
 
+    const allUsers = useAllUsersProvider();
+
     const fileInputRef = useRef<HTMLInputElement>(null)
 
 
@@ -51,17 +55,29 @@ const ProfilePanel = ({isOpen, onClose, userDetails}: {
     }
     console.log(file)
   }
+  
+     
+    const checkIfUserNameExists = (username: string) => {
+        return allUsers.filter(acct => (acct.walletAddress !== userDetails.walletAddress) && (acct.username === username)).length === 1
+    }
 
   const handleSave = async () => {
     setIsSaving(true);
 
     try {
+
+        if(checkIfUserNameExists(editableUserDetails.username)){
+            errorToast(`This username has already been taken`);
+            return;
+        }
+
         await uploadImage({
             walletAddress: userDetails.walletAddress,
             file: editableUserDetails.image!,
             bio: editableUserDetails.bio,
             username: editableUserDetails.username
         })
+        
         setEditableUsersDetail((prev) => ({
             ...prev,
             previewURL: ''

@@ -55,3 +55,22 @@ export const isUsernameOrPublicKey = (value: string) : ('username' | 'walletAddr
   return 'walletAddress';
 
 }
+
+export const uploadImageToCloudinary = async (file: File) => {
+  
+  const CLOUD_NAME: string = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME!
+  const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_CLOUD_UPLOAD_PRESET!
+  
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", UPLOAD_PRESET);
+  
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{
+    method: "POST",
+    body: formData,
+  });
+  const data = await res.json();
+  const url = data.url
+  return url as string
+
+}

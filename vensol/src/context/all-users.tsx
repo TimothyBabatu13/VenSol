@@ -12,7 +12,7 @@ const AllUsersProvider = ({ children } : {
     const [users, setUsers] = useState<DataTpe[]>([]);
 
     const fetchData = async () => {
-        const res = await getAllUsers({
+        await getAllUsers({
             callBack: (data)=> {
                 const uniqueArray : DataTpe[] = Array.from(new Set(data.map(o => JSON.stringify(o)))).map(str => JSON.parse(str)).map(({username, walletAddress}: userType) => ({
                     username,
@@ -21,7 +21,6 @@ const AllUsersProvider = ({ children } : {
                 setUsers(uniqueArray)
             }
         });
-        res;
     }
 
     useEffect(() =>{

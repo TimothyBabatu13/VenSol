@@ -16,7 +16,9 @@ import AllUsersProvider from "./all-users";
 const Connection = ({ children }: {
     children: React.ReactNode
 }) => {
+ 
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  
   const wallets = useMemo(()=>[
     new PhantomWalletAdapter(),
     new SolflareWalletAdapter()

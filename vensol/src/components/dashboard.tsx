@@ -1,109 +1,24 @@
 
-import { useEffect, useState } from "react"
-import { Wallet, Send, QrCode, Clock, RefreshCw, Users, Copy } from "lucide-react"
+import { useState } from "react"
+import { Wallet, Send, QrCode, Clock, Users } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Button } from "./ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 import { SendTokensForm } from "./send-tokens-form"
 import { RequestTokensForm } from "./request-tokens-form"
 import { TransactionFeed } from "./transaction-feed"
 import { SplitBillForm } from "./split-bill-form"
-import { formatAddress } from "../lib/utils"
-import { successToast } from "./my-custom-toast"
 import { WalletComponent } from "./wallet"
-import { useWalletDetailsProvider } from "../context/wallet-info"
-import { createAccount } from "../lib/firebase-helpers"
-import { useAuthProvider } from "../context/auth-provider"
 
 export const Dashboard = () => {
   
-  
   const [activeTab, setActiveTab] = useState("send")
-  const auth = useAuthProvider();
-  const wallet = useWalletDetailsProvider();
-
-  const refreshBalance = () => {
-    wallet.refresh();
-    successToast('Balance updated 🚀🚀') 
-  }
-
-  useEffect(()=>{
-
-    if(wallet.walletAddress.trim()){
-      if(!auth?.authenticated){
-        return;
-      }
-
-      if(wallet.walletAddress) {
-        createAccount({
-          userWallet: wallet.walletAddress
-        })
-      }
-    }
-    
-  },[wallet.walletAddress])
-  
  
   return (
       <main className="flex-1 py-6">
         <div className="grid gap-6 md:grid-cols-[300px_1fr]">
           <div className="space-y-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle>Wallet</CardTitle>
-                <CardDescription>Your Solana wallet details</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage 
-                      // src={user?.user?.picture}
-                      draggable={false}
-                    />
-                    <AvatarFallback>
-                      {/* {user.user?.username ? user.user?.username.substring(0, 2).toUpperCase() : "WA"} */}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{false || "Wallet Owner"}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {wallet.walletAddress ? <span className="flex w-full items-center">
-                        {formatAddress(wallet.walletAddress)}
-                        <Copy 
-                          className="ml-5 cursor-pointer" 
-                          size={12}
-                          onClick={() => {
-                            navigator.clipboard.writeText(wallet.walletAddress);
-                            successToast('Wallet address copied')
-                          }}
-                        />
-                      </span>
-                       : "No wallet connected"}
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <p className="text-sm text-muted-foreground">SOL Balance</p>
-                    <p className="font-medium">{wallet.walletBalance?.toFixed(4)} SOL</p>
-                  </div>
-                  {/* {Object.entries(user.tokenBalances).map(([token, balance]) => (
-                    <div key={token} className="flex justify-between">
-                      <p className="text-sm text-muted-foreground">{token}</p>
-                      <p className="font-medium">{balance}</p>
-                    </div>
-                  ))} */}
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full cursor-pointer" 
-                onClick={refreshBalance}>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Refresh Balances
-                </Button>
-              </CardFooter>
-            </Card>
+            <WalletComponent />
 
             <div className="hidden md:block">
               <div className="space-y-2">
@@ -156,11 +71,7 @@ export const Dashboard = () => {
               </TabsList>
 
               <TabsContent value="wallet">
-                <WalletComponent 
-                  // user={user}
-                  walletAddress={wallet.walletAddress}
-                  walletBalance={wallet.walletBalance}
-                />
+                <WalletComponent />
                 {/* Mobile wallet view - already shown in sidebar for desktop */}
               </TabsContent>
 

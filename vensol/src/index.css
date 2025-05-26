@@ -142,5 +142,7 @@ header .loogedin .wallet-adapter-button:hover{
 }
 
 header .loogedin .wallet-adapter-button img, header .loogedin .wallet-adapter-button i  {
-  display: none;
+  display: none !important;
+  height: 0 !important;
+  width: 0 !important;
 }
