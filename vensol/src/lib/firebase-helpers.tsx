@@ -198,8 +198,9 @@ export const AddInitialTransaction = async ({ sender, receiver, amount, uniqueId
 
 }
 
-export const AddFinalTransaction = async ({ uniqueId } : {
-    uniqueId: string
+export const AddFinalTransaction = async ({ uniqueId, url } : {
+    uniqueId: string,
+    url: string
 }) => {
     console.log(uniqueId, 'form add final transaction')
     const q = query(transactionRef, where("uniqueId", "==", uniqueId));
@@ -208,7 +209,8 @@ export const AddFinalTransaction = async ({ uniqueId } : {
     documents.forEach(async (docSnapshot) => {
         const docRef = doc(db, "transactions", docSnapshot.id);
         await updateDoc(docRef, {
-            status: 'succesful'
+            status: 'succesful',
+            url
         });
         console.log('updated succesfully')
     });

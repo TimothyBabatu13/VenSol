@@ -28,12 +28,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
-
-/*
-Get all users using the hook i created, after that, you can always check if username correlates with what the user inputted.
-Shalom #️🚀🚀🚀🚀🚀🚀 
-*/
-
+const network = 'devnet';
 export const SendTokensForm = () => {
 
   const userAuth = useAuthProvider();
@@ -89,12 +84,12 @@ export const SendTokensForm = () => {
 
           const signature = await sendTransaction(transaction, connection, { minContextSlot });
           await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
-          const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+          const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=${network}`;
           successToast(`${values.token} sent 🚀🚀`)
           wallet.refresh()
           console.log(explorerUrl)
 
-          await AddFinalTransaction({uniqueId});
+          await AddFinalTransaction({uniqueId, url: explorerUrl});
           
       } catch (error) {
         const err = error as Error

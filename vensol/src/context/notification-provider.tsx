@@ -61,7 +61,7 @@ const NotificationProvider = ({ children }: {
                 const moneyReceived = e.filter((trn) => trn.receiver === 'BX63NWWAFaiMDE7ccRTUzMivXYy2XZTHyDMi2mkGSLQs').map(trn => ({
                   title: `Transfer from ${shortenLength(trn.sender)}`,
                   address: trn.sender,
-                  description: `You received ${+trn.amount/LAMPORTS_PER_SOL}SOL from ${trn.sender}`,
+                  description: `You received ${+trn.amount/LAMPORTS_PER_SOL}SOL from ${shortenLength(trn.sender)}`,
                   time: trn.time,
                   seen: trn.seen
                 }))
