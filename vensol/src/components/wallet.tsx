@@ -27,7 +27,6 @@ export const WalletComponent = () => {
         await getUserDetails({
           userWallet: wallet,
           callBack: (e)=>{
-            console.log(e)
             const data = e[0];
             setUser(data)
           }

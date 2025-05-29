@@ -1,5 +1,5 @@
 
-import { ArrowDownLeft, ArrowUpRight, Copy } from "lucide-react"
+import { ArrowDownLeft, ArrowUpRight, Copy, Link } from "lucide-react"
 import { formatAddress, formatDate } from "../lib/utils"
 import { useTransactionProvider } from "../context/notification-provider"
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
@@ -9,6 +9,7 @@ import { successToast } from "./my-custom-toast";
 export const TransactionFeed = () => {
 
   const data = useTransactionProvider();
+ 
 
   if (data?.isLoading) {
     return (
@@ -25,6 +26,8 @@ export const TransactionFeed = () => {
       </div>
     )
   }
+
+  
 
   return (
     <div className="space-y-4">
@@ -55,6 +58,12 @@ export const TransactionFeed = () => {
                     }}
                   />
                 </p>
+                {tx.url && (
+                  <a href={tx.url} target="_blank" className="flex text-muted-foreground items-center gap-2">
+                    <p className="text-sm mt-1">{formatAddress(tx.url)}</p>
+                    <Link cursor={'pointer'} size={12}/>
+                  </a>
+                )}
                 {tx.note && <p className="text-sm mt-1">{tx.note}</p>}
               </div>
               <div className="text-right">

@@ -18,7 +18,7 @@ export const createAccount = async ({ userWallet } : {
 }) => {
     
     if(!userWallet) return;
-    console.log(userWallet)
+
     const q = query(usersRef, where("walletAddress", "==", userWallet));
     const querySnapshot = await getDocs(q);
 
@@ -126,7 +126,7 @@ interface TrasactnDb {
 }
 export const AddInitialTransaction = async ({ sender, receiver, amount, uniqueId, note } : TrasactnDb) => {
     const col = collection(db, "transactions");
-    
+    console.log(sender, receiver, amount)
     if(note){
         await addDoc(col, {
             sender,
@@ -136,8 +136,10 @@ export const AddInitialTransaction = async ({ sender, receiver, amount, uniqueId
             status: 'incoming',
             uniqueId,
             seen: false,
-            note
+            note,
+            url: ''
         });
+        return;
     }
 
     await addDoc(col, {
@@ -148,6 +150,7 @@ export const AddInitialTransaction = async ({ sender, receiver, amount, uniqueId
         status: 'incoming',
         uniqueId,
         seen: false,
+        url: ''
     });
 
 }
@@ -156,7 +159,7 @@ export const AddFinalTransaction = async ({ uniqueId, url } : {
     uniqueId: string,
     url: string
 }) => {
-    console.log(uniqueId, 'form add final transaction')
+  
     const q = query(transactionRef, where("uniqueId", "==", uniqueId));
     const documents = await getDocs(q);
     
@@ -166,7 +169,7 @@ export const AddFinalTransaction = async ({ uniqueId, url } : {
             status: 'succesful',
             url
         });
-        console.log('updated succesfully')
+       
     });
 
 }
@@ -174,7 +177,7 @@ export const AddFinalTransaction = async ({ uniqueId, url } : {
 export const AddTransactionFailed = async ({ uniqueId } : {
     uniqueId: string
 }) => {
-    console.log(uniqueId, 'form transaction failed');
+
     const q = query(transactionRef, where("uniqueId", "==", uniqueId));
     const documents = await getDocs(q);
     
@@ -183,7 +186,7 @@ export const AddTransactionFailed = async ({ uniqueId } : {
         await updateDoc(docRef, {
             status: 'failed'
         });
-        console.log('updated succesfully')
+    
     });
 
 }
@@ -216,7 +219,8 @@ export interface TransactnType {
     status: string,
     time: number,
     uniqueId: string,
-    note?: string
+    note?: string,
+    url: undefined | string
 }
 
 export const TransactionNotifications = ({ callBack }: {
@@ -230,4 +234,28 @@ export const TransactionNotifications = ({ callBack }: {
             callBack(cities)
         })})
         unsubscribe;
+}
+
+export const UpdateSeenOfDoc = async ({ ids } : {
+    ids: string[]
+}) => {
+    const snapshots = await Promise.all(
+    ids.map(async (id) => {
+      const q = query(transactionRef, where("uniqueId", "==", id));
+      const snapshot = await getDocs(q);
+      return snapshot.docs;
+    })
+  );
+
+   const allDocs = snapshots.flat();
+
+  await Promise.all(
+    allDocs.map(async (docSnapshot) => {
+      const docRef = doc(db, "transactions", docSnapshot.id);
+      await updateDoc(docRef, {
+        seen: true,
+      });
+    })
+  );
+
 }

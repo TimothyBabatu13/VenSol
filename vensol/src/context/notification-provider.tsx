@@ -9,6 +9,7 @@ interface HeaderNotificationType {
   description: string;
   time: number;
   seen: boolean;
+  uniqueId: string
 }
 
 interface RealTransactionType {
@@ -21,6 +22,7 @@ interface RealTransactionType {
   note: string | undefined;
   status: string;
   seen: boolean;
+  url: undefined | string
 }
 
 interface Notification {
@@ -57,13 +59,13 @@ const NotificationProvider = ({ children }: {
               
               TransactionNotifications({
               callBack: (e)=>{
-
-                const moneyReceived = e.filter((trn) => trn.receiver === 'BX63NWWAFaiMDE7ccRTUzMivXYy2XZTHyDMi2mkGSLQs').map(trn => ({
+                const moneyReceived = e.filter((trn) => trn.receiver === user.walletAddress).map(trn => ({
                   title: `Transfer from ${shortenLength(trn.sender)}`,
                   address: trn.sender,
                   description: `You received ${+trn.amount/LAMPORTS_PER_SOL}SOL from ${shortenLength(trn.sender)}`,
                   time: trn.time,
-                  seen: trn.seen
+                  seen: trn.seen,
+                  uniqueId: trn.uniqueId
                 }))
                 setHeaderNotification(moneyReceived)
                 setNumberOfNotifications(moneyReceived.filter(item => !item.seen).length)
@@ -77,7 +79,8 @@ const NotificationProvider = ({ children }: {
                   timestamp: trn.time,
                   note: trn.note,
                   status: trn.status,
-                  seen: trn.seen
+                  seen: trn.seen,
+                  url: trn.url
                 })).sort((a, b) => b.timestamp - a.timestamp)
 
                 setTransactionNotification(realNotification)

@@ -25,6 +25,7 @@ const ProfilePanel = ({isOpen, onClose, userDetails}: {
 }) => {
 
     const [saving, setIsSaving] = useState(false);
+
     const [editableUserDetails, setEditableUsersDetail] = useState<user>({
         bio: userDetails.bio,
         profileURL: userDetails.profileURL,
@@ -33,6 +34,16 @@ const ProfilePanel = ({isOpen, onClose, userDetails}: {
         previewURL: '',
         image: undefined
     })
+
+    useEffect(() =>{
+        setEditableUsersDetail(prev => ({
+            ...prev,
+            username: userDetails.username,
+            walletAddress: userDetails.walletAddress,
+            bio: userDetails.bio,
+            profileURL: userDetails.profileURL
+        }))
+    }, [userDetails])
 
     const allUsers = useAllUsersProvider();
 
