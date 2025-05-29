@@ -43,7 +43,7 @@ export default function SplitBillComponent({ data } : {
   const progressPercentage = (contributorsCount / data?.numberOfPeople!) * 100
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br bg-['oklab(0.994745 0 0) p-4">
+    <div className="flex justify-center min-h-screen bg-gradient-to-br bg-['oklab(0.994745 0 0) p-4">
       <Card className="w-full max-w-md shadow-xl border-0 bg-white/90 backdrop-blur-sm overflow-hidden">
         {/* <div className="h-2 bg-gradient-to-r from-teal-400 to-emerald-500"></div> */}
         <CardHeader className="pb-2">
