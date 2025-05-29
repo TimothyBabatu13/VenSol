@@ -32,7 +32,7 @@ export const SendTokensForm = () => {
 
   const userAuth = useAuthProvider();
   const wallet = useWalletDetailsProvider()
-  const { sendTransaction } = useWallet()
+  const { sendTransaction, publicKey } = useWallet()
   const { connection } = useConnection()
   const [isSubmitting, setIsSubmitting] = useState(false)
   
@@ -81,7 +81,7 @@ export const SendTokensForm = () => {
           const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
 
           transaction.recentBlockhash = blockhash;
-          transaction.feePayer = fromPubkey;
+          transaction.feePayer = publicKey!;
           
           const signature = await sendTransaction(transaction, connection, { minContextSlot });
           await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
