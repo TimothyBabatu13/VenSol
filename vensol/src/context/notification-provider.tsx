@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState } from "react"
 import { TransactionNotifications, } from "../lib/firebase-helpers"
 import { useWalletDetailsProvider } from "./wallet-info"
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { successToast } from "../components/my-custom-toast";
 
 interface HeaderNotificationType {
   title: string;
@@ -67,11 +66,12 @@ const NotificationProvider = ({ children }: {
                   description: trn.status === 'incoming' ? `Incoming ${+trn.amount/LAMPORTS_PER_SOL}SOL from ${shortenLength(trn.sender)}`: `You received ${+trn.amount/LAMPORTS_PER_SOL}SOL from ${shortenLength(trn.sender)}`,
                   time: trn.time,
                   seen: trn.seen,
-                  uniqueId: trn.uniqueId
+                  uniqueId: trn.uniqueId,
+                  status: trn.status
                 })).sort((a, b) => b.time - a.time)
 
-                const find = moneyReceived[0].seen;
-                if(!find) successToast(`Incoming transfer.`)
+                // const find = moneyReceived[0].seen && moneyReceived[0].status === 'incoming';
+                // if(!find) successToast(`Incoming transfer.`)
                 setHeaderNotification(moneyReceived)
                 setNumberOfNotifications(moneyReceived.filter(item => !item.seen).length)
 
