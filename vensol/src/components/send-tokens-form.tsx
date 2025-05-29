@@ -51,7 +51,6 @@ export const SendTokensForm = () => {
       errorToast("You need to be logged in to send tokens")
       return;
     }
-    // 32PnHdJiXaLZjcx3RtJin8TJYysbwGvvDcHLYDeSVmbf
 
     const uniqueId = crypto.randomUUID();
 
@@ -100,65 +99,7 @@ export const SendTokensForm = () => {
 
     }
 
-
-    SendSol()
-    // const sendSol = async () => {
-    //   setIsSubmitting(true)
-    //   try {
-    //     const toPubkey = new PublicKey(values.recipient);
-    //   const lamports = Number(values.amount) * LAMPORTS_PER_SOL as number;
-    //   const fromPubkey = new PublicKey(wallet.walletAddress)
-
-    //   const transaction = new Transaction().add(
-    //     SystemProgram.transfer({
-    //       fromPubkey,
-    //       toPubkey,
-    //       lamports,
-    //     })
-    //   );
-
-    //   await AddInitialTransaction({
-    //     amount: lamports.toString(),
-    //     receiver: toPubkey.toString(),
-    //     sender: fromPubkey.toString(),
-    //   });
-
-    //   /* 
-    //     optimize this to be very fast. It's fucking slow.
-    //   */
-
-    //   const signature = await sendTransaction(transaction, connection);
-    //   const latestBlockhash = await connection.getLatestBlockhash();
-    //   await connection.confirmTransaction({
-    //     signature,
-    //     blockhash: latestBlockhash.blockhash,
-    //     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-    //   },
-    //   "confirmed");
-    //   await AddFinalTransaction({
-    //     amount: lamports.toString(),
-    //     receiver: toPubkey.toString(),
-    //     sender: fromPubkey.toString(),
-    //   });
-    //   const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
-    //   successToast(`${values.token} sent 🚀🚀`)
-    //   wallet.refresh()
-    //   console.log(explorerUrl)
-    //   } catch (error) {
-
-    //   }
-    //   finally{
-    //     setIsSubmitting(false)
-    //   }
-
-    // }
-    
-    // sendSol()
-
-    // setIsSubmitting(true)
-
-    // SendSol({amount: 2, recipient: '8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK'})
-    
+    SendSol() 
     
   }
     

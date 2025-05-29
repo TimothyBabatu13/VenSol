@@ -11,6 +11,7 @@ import { errorToast, successToast } from "./my-custom-toast"
 import { useAuthProvider } from "../context/auth-provider"
 import { useWalletDetailsProvider } from "../context/wallet-info"
 import QRCode from "./qr-code"
+import { QrCodeData, type qrCodeData } from "../lib/firebase-helpers"
 
 const formSchema = z.object({
   amount: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
@@ -38,7 +39,7 @@ export const RequestTokensForm = () => {
     },
   })
 
-  const onSubmit = (values: {
+  const onSubmit = async (values: {
     amount: string,
     token: string,
     note?: string
@@ -54,20 +55,17 @@ export const RequestTokensForm = () => {
       return;
     }
  
-    const paymentData = {
+    const paymentData: qrCodeData = {
       action: "request",
       recipient: walletAddress,
       amount: values.amount,
-      token: values.token,
+      // token: values.token,
       note: values.note || "",
     }
 
-    const encodedParams = encodeURIComponent(JSON.stringify(paymentData))
-    console.log(encodedParams);
+    const result = await QrCodeData(paymentData);
 
-    const url = `http://localhost:5173/send-token?data=${encodedParams}`
-
-    setQrData(url)
+    setQrData(`https://vensol.vercel.app/send-token?data=${result}`)
     successToast('QR code generated')
   }
 

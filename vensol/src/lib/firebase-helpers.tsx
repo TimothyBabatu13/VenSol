@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, onSnapshot, query, updateDoc, where, type DocumentData } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 import { errorToast, successToast } from "../components/my-custom-toast";
 import { uploadImageToCloudinary } from "./utils";
@@ -259,3 +259,68 @@ export const UpdateSeenOfDoc = async ({ ids } : {
   );
 
 }
+
+const qrCodeRef = collection(db, 'qrCode');
+
+const ACTION = {
+  request: "request",
+  splitBill: "splitBill",
+} as const;
+
+
+type ActionType = (typeof ACTION)[keyof typeof ACTION];
+
+export interface qrCodeData {
+    action: ActionType,
+    recipient: string,
+    amount: string,
+    note?: string,
+    title?: string,
+    totalAmount?: string,
+    amountPerPerson?: string 
+}
+// {"action":"request","recipient":"8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK","amount":"1","token":"SOL","note":""}
+
+export const QrCodeData = async ({ action, recipient, amount, note, title, totalAmount, amountPerPerson } : qrCodeData) => {
+    const uniqueId = crypto.randomUUID();
+    const data = action === 'request' ? ({
+        amount,
+        recipient,
+        action: 'request',
+        note: note ? note : '',
+        uniqueId
+
+    }) : ({
+        amount,
+        recipient,
+        action: 'splitBill',
+        note: note ? note : '',
+        amountPerPerson,
+        totalAmount,
+        title: title ? title : '',
+        uniqueId
+    })
+    try {
+        const docRef = await addDoc(qrCodeRef, data);
+        console.log("Document written with ID:", docRef.id);
+        return uniqueId
+    } 
+    catch (error) {
+        console.error("Error adding document:", error)
+        const err = error as Error;
+        errorToast(err.message);
+    }
+}
+
+export const ReadQrCodeData = async ({ id, callBack }: {
+    id: string,
+    callBack: (e: DocumentData) => void
+}) => {
+    const q = query(qrCodeRef, where("uniqueId", "==", id));
+    const querySnapshot = await getDocs(q);
+    
+    querySnapshot.docs.forEach(e =>{
+        callBack(e.data())
+    })
+}
+
