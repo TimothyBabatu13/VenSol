@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -14,8 +13,8 @@ import { useAuthProvider } from "../context/auth-provider"
 import { errorToast, successToast } from "./my-custom-toast"
 import { useWalletDetailsProvider } from "../context/wallet-info"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
-// import { AddFinalTransaction, AddInitialTransaction, AddTransactionFailed } from "../lib/firebase-helpers"
-// import { network } from "../lib/utils"
+import { AddFinalTransaction, AddInitialTransaction, AddTransactionFailed } from "../lib/firebase-helpers"
+import { network } from "../lib/utils"
 
 const formSchema = z.object({
   recipient: z.string().min(1, "Recipient is required"),
@@ -54,111 +53,111 @@ export const SendTokensForm = () => {
     }
     // 32PnHdJiXaLZjcx3RtJin8TJYysbwGvvDcHLYDeSVmbf
 
-    // const uniqueId = crypto.randomUUID();
+    const uniqueId = crypto.randomUUID();
 
-    // const SendSol =  async ()=>{
-    //   setIsSubmitting(true)
-    //   try {
-    //     const lamports = Number(values.amount) * LAMPORTS_PER_SOL;
-    //     const fromPubkey = new PublicKey(wallet.walletAddress);
-    //     const toPubkey = new PublicKey(values.recipient)
-
-    //     const transaction = new Transaction().add(
-    //       SystemProgram.transfer({
-    //         fromPubkey,
-    //         toPubkey,
-    //         lamports,
-    //       }));
-          
-    //       AddInitialTransaction({
-    //         amount: lamports.toString(),
-    //         receiver: toPubkey.toString(),
-    //         sender: fromPubkey.toString(),
-    //         uniqueId,
-    //         note: values.note
-    //       });
-        
-    //       const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
-
-    //       const signature = await sendTransaction(transaction, connection, { minContextSlot });
-    //       await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
-    //       const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=${network}`;
-    //       successToast(`${values.token} sent 🚀🚀`)
-    //       wallet.refresh()
-    //       console.log(explorerUrl)
-
-    //       await AddFinalTransaction({uniqueId, url: explorerUrl});
-          
-    //   } catch (error) {
-    //     const err = error as Error
-    //     console.log(err)
-    //     errorToast(err.message)
-    //     await AddTransactionFailed({uniqueId})
-    //   }
-    //   finally{
-    //     setIsSubmitting(false)
-    //   }
-
-    // }
-
-
-    // SendSol()
-    const sendSol = async () => {
+    const SendSol =  async ()=>{
       setIsSubmitting(true)
       try {
-        const toPubkey = new PublicKey(values.recipient);
-      const lamports = Number(values.amount) * LAMPORTS_PER_SOL;
-      const fromPubkey = new PublicKey(wallet.walletAddress)
+        const lamports = Number(values.amount) * LAMPORTS_PER_SOL;
+        const fromPubkey = new PublicKey(wallet.walletAddress);
+        const toPubkey = new PublicKey(values.recipient)
 
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports,
-        })
-      );
+        const transaction = new Transaction().add(
+          SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports,
+          }));
+          
+          AddInitialTransaction({
+            amount: lamports.toString(),
+            receiver: toPubkey.toString(),
+            sender: fromPubkey.toString(),
+            uniqueId,
+            note: values.note
+          });
+        
+          const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
 
-      // await AddInitialTransaction({
-      //   amount: lamports.toString(),
-      //   receiver: toPubkey.toString(),
-      //   sender: fromPubkey.toString(),
-      // });
+          const signature = await sendTransaction(transaction, connection, { minContextSlot });
+          await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
+          const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=${network}`;
+          successToast(`${values.token} sent 🚀🚀`)
+          wallet.refresh()
+          console.log(explorerUrl)
 
-      /* 
-        optimize this to be very fast. It's fucking slow.
-      */
-
-      const signature = await sendTransaction(transaction, connection);
-      const latestBlockhash = await connection.getLatestBlockhash();
-      await connection.confirmTransaction({
-        signature,
-        blockhash: latestBlockhash.blockhash,
-        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-      },
-      "confirmed");
-      // await AddFinalTransaction({
-      //   amount: lamports.toString(),
-      //   receiver: toPubkey.toString(),
-      //   sender: fromPubkey.toString(),
-      // });
-      const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
-      successToast(`${values.token} sent 🚀🚀`)
-      wallet.refresh()
-      console.log(explorerUrl)
+          await AddFinalTransaction({uniqueId, url: explorerUrl});
+          
       } catch (error) {
-
+        const err = error as Error
+        console.log(err)
+        errorToast(err.message)
+        await AddTransactionFailed({uniqueId})
       }
       finally{
         setIsSubmitting(false)
       }
 
     }
+
+
+    SendSol()
+    // const sendSol = async () => {
+    //   setIsSubmitting(true)
+    //   try {
+    //     const toPubkey = new PublicKey(values.recipient);
+    //   const lamports = Number(values.amount) * LAMPORTS_PER_SOL as number;
+    //   const fromPubkey = new PublicKey(wallet.walletAddress)
+
+    //   const transaction = new Transaction().add(
+    //     SystemProgram.transfer({
+    //       fromPubkey,
+    //       toPubkey,
+    //       lamports,
+    //     })
+    //   );
+
+    //   await AddInitialTransaction({
+    //     amount: lamports.toString(),
+    //     receiver: toPubkey.toString(),
+    //     sender: fromPubkey.toString(),
+    //   });
+
+    //   /* 
+    //     optimize this to be very fast. It's fucking slow.
+    //   */
+
+    //   const signature = await sendTransaction(transaction, connection);
+    //   const latestBlockhash = await connection.getLatestBlockhash();
+    //   await connection.confirmTransaction({
+    //     signature,
+    //     blockhash: latestBlockhash.blockhash,
+    //     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+    //   },
+    //   "confirmed");
+    //   await AddFinalTransaction({
+    //     amount: lamports.toString(),
+    //     receiver: toPubkey.toString(),
+    //     sender: fromPubkey.toString(),
+    //   });
+    //   const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+    //   successToast(`${values.token} sent 🚀🚀`)
+    //   wallet.refresh()
+    //   console.log(explorerUrl)
+    //   } catch (error) {
+
+    //   }
+    //   finally{
+    //     setIsSubmitting(false)
+    //   }
+
+    // }
     
-    sendSol()
+    // sendSol()
 
-    setIsSubmitting(true)
+    // setIsSubmitting(true)
 
-    // SendSol()
+    // SendSol({amount: 2, recipient: '8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK'})
     
     
   }
