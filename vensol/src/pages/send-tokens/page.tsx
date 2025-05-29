@@ -29,7 +29,7 @@ export const Page = () => {
   return (
     <div className="space-y-6">
       {
-        data?.action === 'request' ? (<SendToken data={data!} />) : (<MultipleTokenForm />) 
+        data?.action === 'request' ? (<SendToken data={data!} />) : (<MultipleTokenForm data={data!} />) 
       }
       <Toaster />
     </div>

@@ -9,9 +9,10 @@ import { Input } from "./ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Textarea } from "./ui/textarea"
 import { Button } from "./ui/button"
-import { errorToast } from "./my-custom-toast"
+import { errorToast, successToast } from "./my-custom-toast"
 import { useWalletDetailsProvider } from "../context/wallet-info"
 import QRCode from "./qr-code"
+import { QrCodeData, type qrCodeData } from "../lib/firebase-helpers"
 
 
 const formSchema = z.object({
@@ -45,7 +46,7 @@ export const SplitBillForm = () => {
     }
   })
 
-  const onSubmit = (values: FormValues) => {  
+  const onSubmit = async (values: FormValues) => {  
 
     const totalAmount = Number.parseFloat(values.totalAmount);
     const numberOfPeople = Number.parseInt(values.numberOfPeople);
@@ -57,23 +58,20 @@ export const SplitBillForm = () => {
       return;
     }
     const splitBillData = {
-      action: "splitBill",
+      action: 'splitBill',
       recipient,
       title: values.title,
       totalAmount: totalAmount.toString(),
       amountPerPerson: amountPerPerson.toString(),
-      token: values.token,
       numberOfPeople,
       note: values.note || "",
+
     }
 
-    const qrCodeData = JSON.stringify(splitBillData)
-    
-    const hashData = encodeURIComponent(qrCodeData);
-    const link = `http://localhost:5173/send-token?data=${hashData}`
+    const result = await QrCodeData(splitBillData as qrCodeData);
 
-    setQrData(link)
-
+    setQrData(`https://vensol.vercel.app/send-token?data=${result}`)
+    successToast('QR code generated');
   }
 
   return (

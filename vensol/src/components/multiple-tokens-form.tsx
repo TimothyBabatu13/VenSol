@@ -8,21 +8,14 @@ import { Separator } from "@radix-ui/react-select"
 import { Progress } from "./ui/progress"
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
+import type { qrCodeData } from "../lib/firebase-helpers"
 
-export default function SplitBillComponent() {
+export default function SplitBillComponent({ data } : {
+    data: qrCodeData
+}) {
   const [isContributing, setIsContributing] = useState(false)
   const [contributorsCount, setContributorsCount] = useState(0)
 
-  const billData = {
-    action: "splitBill",
-    recipient: "8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK",
-    title: "Contribution for food",
-    totalAmount: "5",
-    amountPerPerson: "2.5",
-    token: "SOL",
-    numberOfPeople: 2,
-    note: "This is for food only",
-  }
 
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -43,11 +36,11 @@ export default function SplitBillComponent() {
     setTimeout(() => {
       setIsContributing(false)
       setContributorsCount((prev) => prev + 1)
-      successToast( `Successfully contributed ${billData.amountPerPerson} ${billData.token}`)
+      successToast( `Successfully contributed ${data?.amountPerPerson} SOL`)
     }, 2000)
   }
 
-  const progressPercentage = (contributorsCount / billData.numberOfPeople) * 100
+  const progressPercentage = (contributorsCount / data?.numberOfPeople!) * 100
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br bg-['oklab(0.994745 0 0) p-4">
@@ -69,8 +62,8 @@ export default function SplitBillComponent() {
               </Tooltip>
             </TooltipProvider>
           </div>
-          <CardTitle className="text-xl font-bold text-gray-800">{billData.title}</CardTitle>
-          <p className="text-sm text-gray-500 mt-1">{billData.note}</p>
+          <CardTitle className="text-xl font-bold text-gray-800">{data?.title && data?.title}</CardTitle>
+          <p className="text-sm text-gray-500 mt-1">{data?.note && data?.note}</p>
         </CardHeader>
 
         <CardContent className="space-y-6 pt-4">
@@ -78,12 +71,12 @@ export default function SplitBillComponent() {
             <div>
               <p className="text-sm font-medium text-gray-500">Total Amount</p>
               <p className="text-2xl font-bold text-gray-900">
-                {billData.totalAmount} {billData.token}
+                {data?.totalAmount} SOL
               </p>
             </div>
             <div className="flex items-center space-x-1 bg-[#E7E7E8] px-3 py-2 rounded-lg">
               <Users className="h-4 w-4 text-black" />
-              <span className="text-sm font-medium text-black">{billData.numberOfPeople} people</span>
+              <span className="text-sm font-medium text-black">{data?.numberOfPeople} people</span>
             </div>
           </div>
 
@@ -94,7 +87,7 @@ export default function SplitBillComponent() {
                 <span className="text-sm font-medium text-gray-700">Your share</span>
               </div>
               <p className="text-lg font-bold text-gray-900">
-                {billData.amountPerPerson} {billData.token}
+                {data?.amountPerPerson} SOL
               </p>
             </div>
 
@@ -105,11 +98,11 @@ export default function SplitBillComponent() {
                 <span className="text-sm font-medium text-gray-700">Recipient</span>
               </div>
               <div className="flex items-center space-x-2">
-                <code className="text-xs font-mono text-gray-600">{truncateAddress(billData.recipient)}</code>
+                <code className="text-xs font-mono text-gray-600">{truncateAddress(data?.recipient)}</code>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => copyToClipboard(billData.recipient)}
+                  onClick={() => copyToClipboard(data?.recipient)}
                   className="h-6 w-6 p-0 cursor-pointer"
                 >
                   <Copy className="h-3 w-3" />
@@ -122,7 +115,7 @@ export default function SplitBillComponent() {
             <div className="flex justify-between items-center text-sm">
               <span className="font-medium text-gray-700">Progress</span>
               <span className="font-medium">
-                {contributorsCount} of {billData.numberOfPeople} paid
+                {contributorsCount} of {data?.numberOfPeople} paid
               </span>
             </div>
             <Progress
@@ -132,7 +125,7 @@ export default function SplitBillComponent() {
             />
 
             <div className="flex justify-center mt-2 space-x-2">
-              {Array.from({ length: billData.numberOfPeople }).map((_, i) => (
+              {Array.from({ length: data?.numberOfPeople! }).map((_, i) => (
                 <Avatar
                   key={i}
                   className={`h-8 w-8 ${i < contributorsCount ? "border-2 border-teal-500" : "opacity-40"}`}
@@ -151,7 +144,7 @@ export default function SplitBillComponent() {
         <CardFooter className="pt-2">
           <Button
             onClick={handleContribute}
-            disabled={isContributing || contributorsCount >= billData.numberOfPeople}
+            disabled={isContributing || contributorsCount >= data?.numberOfPeople!}
             className="w-full cursor-pointer"
           >
             {isContributing ? (
@@ -159,7 +152,7 @@ export default function SplitBillComponent() {
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 <span>Processing...</span>
               </div>
-            ) : contributorsCount >= billData.numberOfPeople ? (
+            ) : contributorsCount >= data?.numberOfPeople! ? (
               <span>All Contributions Received</span>
             ) : (
               <div className="flex items-center justify-center space-x-2">

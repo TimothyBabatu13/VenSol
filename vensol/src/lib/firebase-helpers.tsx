@@ -277,11 +277,12 @@ export interface qrCodeData {
     note?: string,
     title?: string,
     totalAmount?: string,
-    amountPerPerson?: string 
+    amountPerPerson?: string,
+    numberOfPeople?: number
 }
 // {"action":"request","recipient":"8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK","amount":"1","token":"SOL","note":""}
 
-export const QrCodeData = async ({ action, recipient, amount, note, title, totalAmount, amountPerPerson } : qrCodeData) => {
+export const QrCodeData = async ({ action, recipient, amount, note, title, totalAmount, amountPerPerson, numberOfPeople } : qrCodeData) => {
     const uniqueId = crypto.randomUUID();
     const data = action === 'request' ? ({
         amount,
@@ -291,15 +292,17 @@ export const QrCodeData = async ({ action, recipient, amount, note, title, total
         uniqueId
 
     }) : ({
-        amount,
         recipient,
         action: 'splitBill',
         note: note ? note : '',
         amountPerPerson,
         totalAmount,
         title: title ? title : '',
-        uniqueId
+        uniqueId,
+        numberOfPeople
     })
+
+    console.log(data)
     try {
         const docRef = await addDoc(qrCodeRef, data);
         console.log("Document written with ID:", docRef.id);
