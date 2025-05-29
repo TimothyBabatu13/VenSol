@@ -58,7 +58,7 @@ export const SendTokensForm = () => {
     const SendSol =  async ()=>{
       setIsSubmitting(true)
       try {
-        const lamports = Number(values.amount) * LAMPORTS_PER_SOL;
+        const lamports = parseInt(values.amount) * LAMPORTS_PER_SOL;
         const fromPubkey = new PublicKey(wallet.walletAddress);
         const toPubkey = new PublicKey(values.recipient)
 
