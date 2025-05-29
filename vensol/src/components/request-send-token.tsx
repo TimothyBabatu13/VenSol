@@ -1,15 +1,23 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Copy, ExternalLink, Wallet } from "lucide-react"
-import { successToast } from "./my-custom-toast"
+import { errorToast, successToast } from "./my-custom-toast"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Separator } from "@radix-ui/react-select"
 import { Button } from "./ui/button"
-import type { qrCodeData } from "../lib/firebase-helpers"
+import { AddFinalTransaction, AddInitialTransaction, AddTransactionFailed, type qrCodeData } from "../lib/firebase-helpers"
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js"
+import { useWalletDetailsProvider } from "../context/wallet-info"
+import { useConnection, useWallet } from "@solana/wallet-adapter-react"
+import { network } from "../lib/utils"
 
 export default function Component({ data } : {
   data: qrCodeData
 }) {
   const [isProcessing, setIsProcessing] = useState(false)
+  const wallet = useWalletDetailsProvider();
+  const { connection } = useConnection()
+  const { sendTransaction } = useWallet()
+
 
   const truncateAddress = (address: string) => {
     if(!address) return
@@ -27,16 +35,57 @@ export default function Component({ data } : {
 
   const handleSendPayment = async () => {
     setIsProcessing(true)
+    
+    const uniqueId = crypto.randomUUID();
 
-    setTimeout(() => {
+    try {
+
+      if(!wallet.walletAddress){
+        errorToast(`Please sign in to do this transaction`)
+        return
+      }
+      
+      const lamports = parseInt(data.amount) * LAMPORTS_PER_SOL;
+      const fromPubkey = new PublicKey(wallet.walletAddress);
+      const toPubkey = new PublicKey(data.recipient)
+      
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports,
+        }));
+        
+        AddInitialTransaction({
+          amount: lamports.toString(),
+          receiver: toPubkey.toString(),
+          sender: fromPubkey.toString(),
+          uniqueId,
+          note: data.note
+        });
+        
+        const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
+
+        const signature = await sendTransaction(transaction, connection, { minContextSlot });
+        await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
+        const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=${network}`;
+        successToast(`${data.amount}SOL sent 🚀🚀`)
+        wallet.refresh()
+        console.log(explorerUrl)
+        
+        await AddFinalTransaction({uniqueId, url: explorerUrl});
+    } catch (error) {
+      const err = error as Error
+      console.log(err)
+      errorToast(err.message)
+      await AddTransactionFailed({uniqueId}) 
+    }
+    finally{
       setIsProcessing(false)
-      successToast(`Successfully sent ${data?.amount}SOL`)
-    }, 2000)
+    }
+    
   }
 
-  useEffect(() =>{
-    //fetch data here
-  } , [])
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br bg-['oklab(0.994745 0 0)'] p-4">

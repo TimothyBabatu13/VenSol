@@ -1,0 +1,175 @@
+
+import { useState } from "react"
+import { Copy, Receipt, Users, Info, ArrowRight } from "lucide-react"
+import { successToast } from "./my-custom-toast"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
+import { Button } from "./ui/button"
+import { Separator } from "@radix-ui/react-select"
+import { Progress } from "./ui/progress"
+import { Avatar, AvatarFallback } from "./ui/avatar"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
+
+export default function SplitBillComponent() {
+  const [isContributing, setIsContributing] = useState(false)
+  const [contributorsCount, setContributorsCount] = useState(0)
+
+  const billData = {
+    action: "splitBill",
+    recipient: "8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK",
+    title: "Contribution for food",
+    totalAmount: "5",
+    amountPerPerson: "2.5",
+    token: "SOL",
+    numberOfPeople: 2,
+    note: "This is for food only",
+  }
+
+  const truncateAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`
+  }
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      successToast("Address copied to clipboard")
+    } catch (err) {
+      console.error("Failed to copy: ", err)
+    }
+  }
+
+  const handleContribute = async () => {
+    setIsContributing(true)
+    // Simulate payment processing
+    setTimeout(() => {
+      setIsContributing(false)
+      setContributorsCount((prev) => prev + 1)
+      successToast( `Successfully contributed ${billData.amountPerPerson} ${billData.token}`)
+    }, 2000)
+  }
+
+  const progressPercentage = (contributorsCount / billData.numberOfPeople) * 100
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br bg-['oklab(0.994745 0 0) p-4">
+      <Card className="w-full max-w-md shadow-xl border-0 bg-white/90 backdrop-blur-sm overflow-hidden">
+        {/* <div className="h-2 bg-gradient-to-r from-teal-400 to-emerald-500"></div> */}
+        <CardHeader className="pb-2">
+          <div className="flex justify-between items-center mb-2">
+            <div className="text-black bg-[#E7E7E8] px-3 py-1 rounded-full text-xs font-medium">Split Bill</div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
+                    <Info className="h-4 w-4 text-gray-500" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">Split bill request on Solana</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <CardTitle className="text-xl font-bold text-gray-800">{billData.title}</CardTitle>
+          <p className="text-sm text-gray-500 mt-1">{billData.note}</p>
+        </CardHeader>
+
+        <CardContent className="space-y-6 pt-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total Amount</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {billData.totalAmount} {billData.token}
+              </p>
+            </div>
+            <div className="flex items-center space-x-1 bg-[#E7E7E8] px-3 py-2 rounded-lg">
+              <Users className="h-4 w-4 text-black" />
+              <span className="text-sm font-medium text-black">{billData.numberOfPeople} people</span>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <Receipt className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Your share</span>
+              </div>
+              <p className="text-lg font-bold text-gray-900">
+                {billData.amountPerPerson} {billData.token}
+              </p>
+            </div>
+
+            <Separator />
+
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700">Recipient</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <code className="text-xs font-mono text-gray-600">{truncateAddress(billData.recipient)}</code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => copyToClipboard(billData.recipient)}
+                  className="h-6 w-6 p-0 cursor-pointer"
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="font-medium text-gray-700">Progress</span>
+              <span className="font-medium">
+                {contributorsCount} of {billData.numberOfPeople} paid
+              </span>
+            </div>
+            <Progress
+              value={progressPercentage}
+              className="h-2 bg-gray-100"
+            //   indicatorClassName="bg-gradient-to-r from-teal-400 to-emerald-500"
+            />
+
+            <div className="flex justify-center mt-2 space-x-2">
+              {Array.from({ length: billData.numberOfPeople }).map((_, i) => (
+                <Avatar
+                  key={i}
+                  className={`h-8 w-8 ${i < contributorsCount ? "border-2 border-teal-500" : "opacity-40"}`}
+                >
+                  <AvatarFallback
+                    className={`${i < contributorsCount ? "bg-teal-100 text-teal-700" : "bg-gray-100 text-gray-400"}`}
+                  >
+                    {i === 0 ? "You" : `P${i + 1}`}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+
+        <CardFooter className="pt-2">
+          <Button
+            onClick={handleContribute}
+            disabled={isContributing || contributorsCount >= billData.numberOfPeople}
+            className="w-full cursor-pointer"
+          >
+            {isContributing ? (
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Processing...</span>
+              </div>
+            ) : contributorsCount >= billData.numberOfPeople ? (
+              <span>All Contributions Received</span>
+            ) : (
+              <div className="flex items-center justify-center space-x-2">
+                <span>Contribute Your Share</span>
+                <ArrowRight className="h-4 w-4" />
+              </div>
+            )}
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  )
+}
