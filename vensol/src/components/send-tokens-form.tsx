@@ -56,56 +56,6 @@ export const SendTokensForm = () => {
 
     // const uniqueId = crypto.randomUUID();
 
-    const SendSOlana = async () => {
-      setIsSubmitting(true)
-      try {
-        const lamports = Number(values.amount) * LAMPORTS_PER_SOL;
-        const fromPubkey = new PublicKey(wallet.walletAddress);
-        const toPubkey = new PublicKey(values.recipient)
-        
-        const transferInstruction = SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports,
-        });
-
-         const transaction = new Transaction().add(transferInstruction);
-
-          // Fetch recent blockhash
-    const { blockhash, lastValidBlockHeight } =
-      await connection.getLatestBlockhash();
-
-    transaction.recentBlockhash = blockhash;
-    transaction.feePayer = fromPubkey;
-
-    // Send transaction via wallet (this will trigger wallet popup)
-    const signature = await sendTransaction(transaction, connection);
-
-    // Confirm transaction
-    await connection.confirmTransaction(
-      {
-        signature,
-        blockhash,
-        lastValidBlockHeight,
-      },
-      "confirmed"
-    );
-
-    successToast(`sent`);
-    console.log("Transaction successful, signature:", signature);
-    return signature;
-      }
-      catch(e){
-        console.log(e)
-        const err = e as Error;
-        errorToast(err.message)
-      }
-      finally{
-        setIsSubmitting(false)
-      }
-    }
-
-    SendSOlana()
     // const SendSol =  async ()=>{
     //   setIsSubmitting(true)
     //   try {
@@ -130,9 +80,6 @@ export const SendTokensForm = () => {
         
     //       const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
 
-    //       transaction.recentBlockhash = blockhash;
-    //       transaction.feePayer = publicKey!;
-          
     //       const signature = await sendTransaction(transaction, connection, { minContextSlot });
     //       await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
     //       const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=${network}`;
@@ -156,62 +103,62 @@ export const SendTokensForm = () => {
 
 
     // SendSol()
-    // const sendSol = async () => {
-    //   setIsSubmitting(true)
-    //   try {
-    //     const toPubkey = new PublicKey(values.recipient);
-    //   const lamports = Number(values.amount) * LAMPORTS_PER_SOL as number;
-    //   const fromPubkey = new PublicKey(wallet.walletAddress)
+    const sendSol = async () => {
+      setIsSubmitting(true)
+      try {
+        const toPubkey = new PublicKey(values.recipient);
+      const lamports = Number(values.amount) * LAMPORTS_PER_SOL;
+      const fromPubkey = new PublicKey(wallet.walletAddress)
 
-    //   const transaction = new Transaction().add(
-    //     SystemProgram.transfer({
-    //       fromPubkey,
-    //       toPubkey,
-    //       lamports,
-    //     })
-    //   );
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey,
+          toPubkey,
+          lamports,
+        })
+      );
 
-    //   await AddInitialTransaction({
-    //     amount: lamports.toString(),
-    //     receiver: toPubkey.toString(),
-    //     sender: fromPubkey.toString(),
-    //   });
+      // await AddInitialTransaction({
+      //   amount: lamports.toString(),
+      //   receiver: toPubkey.toString(),
+      //   sender: fromPubkey.toString(),
+      // });
 
-    //   /* 
-    //     optimize this to be very fast. It's fucking slow.
-    //   */
+      /* 
+        optimize this to be very fast. It's fucking slow.
+      */
 
-    //   const signature = await sendTransaction(transaction, connection);
-    //   const latestBlockhash = await connection.getLatestBlockhash();
-    //   await connection.confirmTransaction({
-    //     signature,
-    //     blockhash: latestBlockhash.blockhash,
-    //     lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-    //   },
-    //   "confirmed");
-    //   await AddFinalTransaction({
-    //     amount: lamports.toString(),
-    //     receiver: toPubkey.toString(),
-    //     sender: fromPubkey.toString(),
-    //   });
-    //   const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
-    //   successToast(`${values.token} sent 🚀🚀`)
-    //   wallet.refresh()
-    //   console.log(explorerUrl)
-    //   } catch (error) {
+      const signature = await sendTransaction(transaction, connection);
+      const latestBlockhash = await connection.getLatestBlockhash();
+      await connection.confirmTransaction({
+        signature,
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+      },
+      "confirmed");
+      // await AddFinalTransaction({
+      //   amount: lamports.toString(),
+      //   receiver: toPubkey.toString(),
+      //   sender: fromPubkey.toString(),
+      // });
+      const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=devnet`;
+      successToast(`${values.token} sent 🚀🚀`)
+      wallet.refresh()
+      console.log(explorerUrl)
+      } catch (error) {
 
-    //   }
-    //   finally{
-    //     setIsSubmitting(false)
-    //   }
+      }
+      finally{
+        setIsSubmitting(false)
+      }
 
-    // }
+    }
     
-    // sendSol()
+    sendSol()
 
-    // setIsSubmitting(true)
+    setIsSubmitting(true)
 
-    // SendSol({amount: 2, recipient: '8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK'})
+    // SendSol()
     
     
   }
