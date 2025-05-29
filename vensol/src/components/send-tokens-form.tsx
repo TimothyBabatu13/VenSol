@@ -1,4 +1,3 @@
-"use client"
 
 import { useState } from "react"
 import { useForm } from "react-hook-form"
@@ -81,6 +80,9 @@ export const SendTokensForm = () => {
         
           const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
 
+          transaction.recentBlockhash = blockhash;
+          transaction.feePayer = fromPubkey;
+          
           const signature = await sendTransaction(transaction, connection, { minContextSlot });
           await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
           const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=${network}`;
