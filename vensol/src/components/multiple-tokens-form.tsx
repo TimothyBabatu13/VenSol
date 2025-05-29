@@ -1,21 +1,27 @@
 
 import { useState } from "react"
 import { Copy, Receipt, Users, Info, ArrowRight } from "lucide-react"
-import { successToast } from "./my-custom-toast"
+import { errorToast, successToast } from "./my-custom-toast"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Separator } from "@radix-ui/react-select"
 import { Progress } from "./ui/progress"
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
-import type { qrCodeData } from "../lib/firebase-helpers"
+import { AddFinalTransaction, AddInitialTransaction, AddTransactionFailed, type qrCodeData } from "../lib/firebase-helpers"
+import { useWalletDetailsProvider } from "../context/wallet-info"
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js"
+import { useConnection, useWallet } from "@solana/wallet-adapter-react"
+import { network } from "../lib/utils"
 
 export default function SplitBillComponent({ data } : {
     data: qrCodeData
 }) {
   const [isContributing, setIsContributing] = useState(false)
   const [contributorsCount, setContributorsCount] = useState(0)
-
+  const wallet = useWalletDetailsProvider();
+  const { connection } = useConnection();
+  const { sendTransaction } = useWallet()
 
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -31,8 +37,58 @@ export default function SplitBillComponent({ data } : {
   }
 
   const handleContribute = async () => {
+
+    if(!wallet.walletAddress){
+        errorToast(`Please sign in to do this transaction`);
+        return;
+    }
+
     setIsContributing(true)
-    // Simulate payment processing
+    const uniqueId = crypto.randomUUID();
+
+    try {
+
+        const lamports = parseInt(data?.amountPerPerson!) * LAMPORTS_PER_SOL;
+        const fromPubkey = new PublicKey(wallet.walletAddress);
+        const toPubkey = new PublicKey(data.recipient)
+        
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey,
+                toPubkey,
+                lamports,
+            }));
+        
+            AddInitialTransaction({
+                amount: lamports.toString(),
+                receiver: toPubkey.toString(),
+                sender: fromPubkey.toString(),
+                uniqueId,
+                note: data.note
+            });
+        
+        const { context: { slot: minContextSlot }, value: { blockhash, lastValidBlockHeight }} = await connection.getLatestBlockhashAndContext();
+
+        const signature = await sendTransaction(transaction, connection, { minContextSlot });
+        await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
+        const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=${network}`;
+        successToast(`${data.amount}SOL sent 🚀🚀`)
+        wallet.refresh()
+        console.log(explorerUrl)
+        
+        await AddFinalTransaction({uniqueId, url: explorerUrl});
+        
+    } catch (error) {
+        const err = error as Error
+        console.log(err)
+        errorToast(err.message)
+        await AddTransactionFailed({uniqueId}) 
+    }
+    finally{
+        setIsContributing(false)
+    }
+
+    //I'll exit this later
     setTimeout(() => {
       setIsContributing(false)
       setContributorsCount((prev) => prev + 1)

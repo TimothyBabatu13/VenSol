@@ -34,16 +34,17 @@ export default function Component({ data } : {
   }
 
   const handleSendPayment = async () => {
+    
+    if(!wallet.walletAddress){
+        errorToast(`Please sign in to do this transaction`)
+        return
+      }
+
     setIsProcessing(true)
     
     const uniqueId = crypto.randomUUID();
 
     try {
-
-      if(!wallet.walletAddress){
-        errorToast(`Please sign in to do this transaction`)
-        return
-      }
       
       const lamports = parseInt(data.amount) * LAMPORTS_PER_SOL;
       const fromPubkey = new PublicKey(wallet.walletAddress);
