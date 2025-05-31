@@ -205,7 +205,7 @@ export default function SplitBillComponent({ data, } : {
                         </span>
                       ) : (
                         
-                        <span className={`${!!arrayOfContributors![i] ? "border-2 bg-[#E7E7E8]" : ""} h-full w-full flex items-center justify-center`}>
+                        <span className={`${arrayOfContributors && !!arrayOfContributors![i] && "border-2 bg-[#E7E7E8]"} h-full w-full flex items-center justify-center`}>
                           {`P${i + 1}`}
                         </span>
                       )
