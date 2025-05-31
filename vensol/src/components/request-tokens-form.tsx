@@ -67,6 +67,7 @@ export const RequestTokensForm = () => {
 
     setQrData(`https://vensol.vercel.app/send-token?data=${result}`)
     successToast('QR code generated')
+
   }
 
 

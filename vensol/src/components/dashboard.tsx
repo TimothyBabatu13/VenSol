@@ -1,6 +1,6 @@
 
 import { useState } from "react"
-import { Wallet, Send, QrCode, Clock, Users } from "lucide-react"
+import { Wallet, Send, QrCode, Clock, Users, Gift } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
 import { Button } from "./ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
@@ -42,7 +42,7 @@ export const Dashboard = () => {
                     Split Bill
                   </Button>
                   <Button variant="outline" className="justify-start cursor-pointer" onClick={() => setActiveTab("airdrop")}>
-                    <Users className="mr-2 h-4 w-4" />
+                    <Gift className="mr-2 h-4 w-4" />
                     Request Airdrop
                   </Button>
                 </div>
@@ -74,7 +74,7 @@ export const Dashboard = () => {
                   <span className="hidden md:inline">Split Bill</span>
                 </TabsTrigger>
                 <TabsTrigger value="airdrop" className="cursor-pointer">
-                  <Users className="h-4 w-4 md:mr-2" />
+                  <Gift className="h-4 w-4 md:mr-2" />
                   <span className="hidden md:inline">Request Airdop</span>
                 </TabsTrigger>
               </TabsList>
