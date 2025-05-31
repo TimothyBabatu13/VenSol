@@ -281,7 +281,7 @@ export interface qrCodeData {
     numberOfPeople?: number,
     noOfPeoplePaid?: number,
     arrayOfPeoplePaid?: Array<string>,
-    noOfPeolePaid: number
+    noOfPeolePaid?: number
 }
 // {"action":"request","recipient":"8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK","amount":"1","token":"SOL","note":""}
 
