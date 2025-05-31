@@ -9,6 +9,7 @@ import { RequestTokensForm } from "./request-tokens-form"
 import { TransactionFeed } from "./transaction-feed"
 import { SplitBillForm } from "./split-bill-form"
 import { WalletComponent } from "./wallet"
+import RequestAirdrop from "./request-airdrop"
 
 export const Dashboard = () => {
   
@@ -40,6 +41,10 @@ export const Dashboard = () => {
                     <Users className="mr-2 h-4 w-4" />
                     Split Bill
                   </Button>
+                  <Button variant="outline" className="justify-start cursor-pointer" onClick={() => setActiveTab("airdrop")}>
+                    <Users className="mr-2 h-4 w-4" />
+                    Request Airdrop
+                  </Button>
                 </div>
               </div>
             </div>
@@ -47,7 +52,7 @@ export const Dashboard = () => {
 
           <div>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-5 md:grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6 md:grid-cols-6">
                 <TabsTrigger value="wallet" className="cursor-pointer">
                   <Wallet className="h-4 w-4 md:mr-2" />
                   <span className="hidden md:inline">Wallet</span>
@@ -67,6 +72,10 @@ export const Dashboard = () => {
                 <TabsTrigger value="split" className="cursor-pointer">
                   <Users className="h-4 w-4 md:mr-2" />
                   <span className="hidden md:inline">Split Bill</span>
+                </TabsTrigger>
+                <TabsTrigger value="airdrop" className="cursor-pointer">
+                  <Users className="h-4 w-4 md:mr-2" />
+                  <span className="hidden md:inline">Request Airdop</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -119,6 +128,18 @@ export const Dashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <SplitBillForm />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="airdrop">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Request Airdrop</CardTitle>
+                    <CardDescription>Request for airdrop to test out platform</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <RequestAirdrop />
                   </CardContent>
                 </Card>
               </TabsContent>

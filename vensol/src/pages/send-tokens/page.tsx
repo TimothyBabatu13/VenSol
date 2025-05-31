@@ -19,6 +19,7 @@ export const Page = () => {
         callBack: (e) =>{
           setData(e as qrCodeData);
           setIsLoading(false);
+          console.log(e)
         }
       })
     }, [])

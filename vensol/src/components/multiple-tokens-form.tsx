@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Copy, Receipt, Users, Info, ArrowRight } from "lucide-react"
 import { errorToast, successToast } from "./my-custom-toast"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
@@ -8,20 +8,26 @@ import { Separator } from "@radix-ui/react-select"
 import { Progress } from "./ui/progress"
 import { Avatar, AvatarFallback } from "./ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
-import { AddFinalTransaction, AddInitialTransaction, AddTransactionFailed, type qrCodeData } from "../lib/firebase-helpers"
+import { AddFinalTransaction, AddInitialTransaction, AddTransactionFailed, UpdateReadCodeCount, type qrCodeData } from "../lib/firebase-helpers"
 import { useWalletDetailsProvider } from "../context/wallet-info"
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { network } from "../lib/utils"
+import { useLocation } from "react-router-dom"
 
-export default function SplitBillComponent({ data } : {
-    data: qrCodeData
+export default function SplitBillComponent({ data, } : {
+    data: qrCodeData,
 }) {
   const [isContributing, setIsContributing] = useState(false)
   const [contributorsCount, setContributorsCount] = useState(0)
+  const [arrayOfContributors, setArrayOfContributors] = useState<Array<string>>([])
+  const [contributed, setIsContributed] = useState<boolean>(false)
   const wallet = useWalletDetailsProvider();
   const { connection } = useConnection();
   const { sendTransaction } = useWallet()
+
+  const location = useLocation();
+  const id = location.search.split('?data=')[1];
 
   const truncateAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -72,10 +78,10 @@ export default function SplitBillComponent({ data } : {
         const signature = await sendTransaction(transaction, connection, { minContextSlot });
         await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
         const explorerUrl = `https://explorer.solana.com/tx/${signature}?cluster=${network}`;
-        successToast(`${data.amount}SOL sent 🚀🚀`)
+        successToast(`${data?.amountPerPerson}SOL sent 🚀🚀`)
         wallet.refresh()
-        console.log(explorerUrl)
-        
+
+        UpdateReadCodeCount({id, walletAddress: wallet.walletAddress});
         await AddFinalTransaction({uniqueId, url: explorerUrl});
         
     } catch (error) {
@@ -88,14 +94,17 @@ export default function SplitBillComponent({ data } : {
         setIsContributing(false)
     }
 
-    //I'll exit this later
-    setTimeout(() => {
-      setIsContributing(false)
-      setContributorsCount((prev) => prev + 1)
-      successToast( `Successfully contributed ${data?.amountPerPerson} SOL`)
-    }, 2000)
   }
 
+  useEffect(() =>{
+    setContributorsCount(data.arrayOfPeoplePaid?.length!);
+    const checkIfContributed = () => {
+      return data.arrayOfPeoplePaid?.includes(wallet.walletAddress);
+    }
+    setIsContributed(checkIfContributed()!);
+    setArrayOfContributors(data.arrayOfPeoplePaid!)
+    
+  }, [data.arrayOfPeoplePaid?.length])
   const progressPercentage = (contributorsCount / data?.numberOfPeople!) * 100
 
   return (
@@ -184,12 +193,25 @@ export default function SplitBillComponent({ data } : {
               {Array.from({ length: data?.numberOfPeople! }).map((_, i) => (
                 <Avatar
                   key={i}
-                  className={`h-8 w-8 ${i < contributorsCount ? "border-2 border-teal-500" : "opacity-40"}`}
+                  className={`h-8 w-8 bg-transparent`}
                 >
                   <AvatarFallback
-                    className={`${i < contributorsCount ? "bg-teal-100 text-teal-700" : "bg-gray-100 text-gray-400"}`}
+                    className={`bg-transparent`}
                   >
-                    {i === 0 ? "You" : `P${i + 1}`}
+                    {
+                      i === 0 ? (
+                        <span className={`${contributed ? "border-2 bg-[#E7E7E8]" : "opacity-40"} h-full w-full flex items-center justify-center`}>
+                          {wallet.walletAddress}
+                        </span>
+                      ) : (
+                        
+                        <span className={`${!!arrayOfContributors![i] ? "border-2 bg-[#E7E7E8]" : ""} h-full w-full flex items-center justify-center`}>
+                          {`P${i + 1}`}
+                        </span>
+                      )
+                    }
+                    <span></span>
+                    
                   </AvatarFallback>
                 </Avatar>
               ))}

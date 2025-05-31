@@ -1,4 +1,4 @@
-import { addDoc, collection, doc, getDocs, onSnapshot, query, updateDoc, where, type DocumentData } from "firebase/firestore";
+import { addDoc, arrayUnion, collection, doc, getDocs, increment, onSnapshot, query, updateDoc, where, type DocumentData } from "firebase/firestore";
 import { db } from "../config/firebaseConfig";
 import { errorToast, successToast } from "../components/my-custom-toast";
 import { uploadImageToCloudinary } from "./utils";
@@ -167,7 +167,7 @@ export const AddFinalTransaction = async ({ uniqueId, url } : {
         const docRef = doc(db, "transactions", docSnapshot.id);
         await updateDoc(docRef, {
             status: 'succesful',
-            url
+            url,
         });
        
     });
@@ -278,7 +278,10 @@ export interface qrCodeData {
     title?: string,
     totalAmount?: string,
     amountPerPerson?: string,
-    numberOfPeople?: number
+    numberOfPeople?: number,
+    noOfPeoplePaid?: number,
+    arrayOfPeoplePaid?: Array<string>,
+    noOfPeolePaid: number
 }
 // {"action":"request","recipient":"8w6gHKvRHpNiBDUwH1YbpMfM2wAJk5exnqn3bvMXVonK","amount":"1","token":"SOL","note":""}
 
@@ -299,7 +302,8 @@ export const QrCodeData = async ({ action, recipient, amount, note, title, total
         totalAmount,
         title: title ? title : '',
         uniqueId,
-        numberOfPeople
+        numberOfPeople,
+        noOfPeoplePaid: 0
     })
 
     console.log(data)
@@ -320,10 +324,31 @@ export const ReadQrCodeData = async ({ id, callBack }: {
     callBack: (e: DocumentData) => void
 }) => {
     const q = query(qrCodeRef, where("uniqueId", "==", id));
-    const querySnapshot = await getDocs(q);
-    
-    querySnapshot.docs.forEach(e =>{
-        callBack(e.data())
-    })
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        querySnapshot.forEach((docSnapshot) => {
+            callBack(docSnapshot.data());
+        });
+    });
+    unsubscribe
 }
 
+export const UpdateReadCodeCount = async ({ id, walletAddress }: {
+    id: string,
+    walletAddress: string
+    
+}) => {
+    const q = query(qrCodeRef, where("uniqueId", "==", id));
+    const querySnapshot = (await getDocs(q)).docs;
+    
+    querySnapshot.forEach(async (docSnapshot) => {
+        const docId = docSnapshot.id;
+        
+        const docRef = doc(qrCodeRef, docId);
+
+        await updateDoc(docRef, {
+            noOfPeolePaid: increment(1), 
+            arrayOfPeoplePaid: arrayUnion(walletAddress),
+        });
+        console.log('updated');
+});
+}

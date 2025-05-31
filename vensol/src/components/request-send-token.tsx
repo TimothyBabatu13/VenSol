@@ -34,7 +34,7 @@ export default function Component({ data } : {
   }
 
   const handleSendPayment = async () => {
-    
+
     if(!wallet.walletAddress){
         errorToast(`Please sign in to do this transaction`)
         return
@@ -152,7 +152,6 @@ export default function Component({ data } : {
               `Send ${data?.amount} SOL`
             )}
           </Button>
-
           <div className="text-xs text-gray-500 text-center">
             Make sure you have sufficient balance and network fees
           </div>
